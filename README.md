@@ -3,7 +3,8 @@
 App de IA en Windows flotante y discreta, con soporte para consultas rápidas de texto en pantalla, lectura de documentos y control de opacidad.
 
 ## Créditos
-- Basado en el proyecto original de **Ariel Espinoza**.
+- Autor original: **Ariel Espinoza**
+- Edición y mejoras: **Máximo Gómez**
 
 ## Configuración de API Key
 1. Obtén tu API Key gratuita en [Google AI Studio](https://aistudio.google.com/apikey).

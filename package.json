@@ -2,7 +2,7 @@
   "name": "ghost-ai",
   "version": "1.0.0",
   "description": "App de IA en Windows",
-  "author": "Ariel Espinoza",
+  "author": "Ariel Espinoza (edit: Máximo Gómez)",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
