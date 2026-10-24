@@ -47,7 +47,7 @@ class Program {
         out PROCESS_INFORMATION lpProcessInformation);
 
     static void Main(string[] args) {
-        string baseDir = @"c:\Users\ariel\testeos\ghost-ai";
+        string baseDir = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
         string electronExe = Path.Combine(baseDir, @"node_modules\electron\dist\electron.exe");
         string cmd = "\"" + electronExe + "\" \"" + baseDir + "\"";
 

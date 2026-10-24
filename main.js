@@ -4,7 +4,24 @@ const path = require("path");
 const fs = require("fs");
 const pdfParse = require("pdf-parse");
 
-const logFile = path.join(__dirname, "debug.log");
+// Load .env if present
+try {
+  const envPath = path.join(__dirname, ".env");
+  if (fs.existsSync(envPath)) {
+    const lines = fs.readFileSync(envPath, "utf-8").split("\n");
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith("#")) {
+        const [k, ...v] = trimmed.split("=");
+        if (k && v.length) process.env[k.trim()] = v.join("=").trim();
+      }
+    }
+  }
+} catch {}
+
+const DEFAULT_API_KEY = "";
+
+const logFile = path.join(app.getPath("userData"), "debug.log");
 const log = (msg) => {
   try {
     fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${msg}\n`);
@@ -20,6 +37,7 @@ function createWindow() {
     height: 600,
     center: true,
     frame: true,
+    autoHideMenuBar: true,
     alwaysOnTop: true,
     backgroundColor: "#ffffff",
     focusable: false, // Stealth: clicking does not steal focus from browser!
@@ -31,6 +49,7 @@ function createWindow() {
     show: true,
   });
 
+  mainWindow.removeMenu();
   mainWindow.loadFile(path.join(__dirname, "index.html"));
   mainWindow.setAlwaysOnTop(true, "status");
 
@@ -91,6 +110,12 @@ ipcMain.handle("set-opacity", (_event, val) => {
   if (mainWindow) mainWindow.setOpacity(Math.max(0.15, Math.min(1.0, val)));
 });
 
+ipcMain.handle("set-theme", (_event, theme) => {
+  if (mainWindow) {
+    mainWindow.setBackgroundColor(theme === "dark" ? "#0f172a" : "#ffffff");
+  }
+});
+
 // Helper: Parse any document file (PDF, TXT, MD, etc.)
 async function parseDocument(filePath, bufferOverride, fileNameOverride) {
   const fileName = fileNameOverride || path.basename(filePath);
@@ -124,7 +149,7 @@ ipcMain.handle("select-document", async () => {
   mainWindow.setFocusable(true);
   
   const result = await dialog.showOpenDialog(mainWindow, {
-    title: "Seleccionar uno o más documentos para el examen",
+    title: "Seleccionar uno o más documentos",
     filters: [
       { name: "Documentos", extensions: ["pdf", "txt", "md", "csv", "json"] },
       { name: "Todos los archivos", extensions: ["*"] },
@@ -157,9 +182,21 @@ ipcMain.handle("load-document-buffer", async (_event, { name, buffer }) => {
   return await parseDocument(null, nodeBuf, name);
 });
 
+function getCopierPath() {
+  const candidates = [
+    path.join(process.resourcesPath || "", "app.asar.unpacked", "copier.exe"),
+    path.join(process.resourcesPath || "", "copier.exe"),
+    path.join(__dirname, "copier.exe"),
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return p;
+  }
+  return path.join(__dirname, "copier.exe");
+}
+
 // IPC: Simulate Ctrl+C on active foreground window and get selected text
 ipcMain.handle("get-selected-text", async () => {
-  const copierPath = path.join(__dirname, "copier.exe");
+  const copierPath = getCopierPath();
   clipboard.writeText("");
 
   return new Promise((resolve) => {
@@ -182,67 +219,76 @@ ipcMain.handle("get-clipboard", () => {
   return text || "";
 });
 
-// IPC: Robust AI call with multi-document synthesis, academic criteria, and memory
-ipcMain.handle("ai-request", async (_event, { message, documents, userApiKey, history }) => {
+// Function to clean any leftover formatting symbols
+function cleanTextFormatting(str) {
+  if (!str) return "";
+  return str
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1")
+    .replace(/_{1,3}([^_]+)_{1,3}/g, "$1")
+    .replace(/^[-*_]{3,}\s*$/gm, "")
+    .replace(/^[\*\-]\s+/gm, "• ")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/```[a-zA-Z]*\n?/g, "")
+    .replace(/\*+/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+// IPC: Clean AI call without hardcoded exam preprompts and with clean plain text formatting
+ipcMain.handle("ai-request", async (_event, { message, documents, userApiKey, history, model: userModel }) => {
   const docList = Array.isArray(documents) ? documents.filter(d => d && d.content) : [];
   log(`ai-request: "${message.substring(0, 50)}..." (DocsCount: ${docList.length}, HistoryLen: ${history ? history.length : 0})`);
   
-  const apiKey = (userApiKey && userApiKey.trim()) ? userApiKey.trim() : "";
+  const apiKey = (userApiKey && userApiKey.trim()) ? userApiKey.trim() : (process.env.GEMINI_API_KEY || DEFAULT_API_KEY);
   if (!apiKey) {
-    return { error: "Falta configurar tu API Key. Hacé click en ⚙️ API Key arriba a la derecha para cargarla (es 100% gratis)." };
+    return { error: "Falta configurar tu API Key. Haz clic en 'API Key' arriba a la derecha para guardarla." };
   }
 
-  // Build readable conversation history text
+  // Conversation history
   let historyText = "";
   if (Array.isArray(history) && history.length > 0) {
     historyText = history
-      .map((h) => `${h.role === "user" ? "Estudiante" : "Asistente"}: ${h.content}`)
+      .map((h) => `${h.role === "user" ? "Usuario" : "Asistente"}: ${h.content}`)
       .join("\n\n");
   }
 
-  // Format multiple documents
+  // Documents
   let docsSection = "";
   if (docList.length > 0) {
     docsSection = docList.map((doc, idx) => {
-      return `=== DOCUMENTO DE REFERENCIA [${idx + 1}]: ${doc.name} ===\n${doc.content}\n=== FIN DOCUMENTO [${idx + 1}] ===`;
+      return `[DOCUMENTO DE REFERENCIA ${idx + 1}: ${doc.name}]\n${doc.content}\n[FIN DOCUMENTO ${idx + 1}]`;
     }).join("\n\n");
   }
 
   let promptText = "";
   if (docsSection) {
-    promptText = `OBJETIVO: Eres un asistente académico de excelencia para un examen universitario riguroso.
-Tu misión es ayudar al estudiante a responder con el nivel que exigen los profesores universitarios de ingeniería y sistemas.
-
-${docsSection}
-
-${historyText ? `=== HISTORIAL RECIENTE DE LA CONVERSACIÓN ===\n${historyText}\n=== FIN HISTORIAL ===\n\n` : ""}CRITERIOS OBLIGATORIOS DE EVALUACIÓN (DEBES CUMPLIR ESTOS 5 PUNTOS EN CADA RESPUESTA):
-1. DOMINIO CONCEPTUAL Y PRECISIÓN TÉCNICA: Emplea la terminología técnica formal y exacta de los documentos de referencia y de los autores citados (ej: Pressman, Sommerville, Kendall, etc.). No uses lenguaje vago ni coloquial.
-2. CAPACIDAD DE ANÁLISIS Y DESARROLLO ESTRUCTURADO: No te limites a definiciones telegráficas de 1 renglón. Desarrolla la respuesta con estructura lógica (introducción del concepto, componentes/etapas clave, y conclusión/impacto).
-3. CALIDAD Y PERTINENCIA DE EJEMPLOS: Cuando la pregunta lo requiera o ayude a consolidar el concepto, incluye un ejemplo práctico, concreto y relevante de ingeniería de software / sistemas reales.
-4. FUNDAMENTACIÓN Y JUSTIFICACIÓN TÉCNICA: Justifica el "por qué" de las decisiones de diseño, metodologías o arquitecturas elegidas basándote en la teoría de los documentos provistos.
-5. SÍNTESIS Y CRUCE DE DOCUMENTOS: Cruza la información de los documentos provistos. Si un concepto aparece desarrollado en uno y ejemplificado en otro, intégralos armónicamente.
-
-CONSULTA DEL EXAMEN A RESPONDER:
-${message}`;
+    promptText = `${docsSection}\n\n${historyText ? `HISTORIAL PREVIO:\n${historyText}\n\n` : ""}CONSULTA:\n${message}`;
+  } else if (historyText) {
+    promptText = `${historyText}\n\nUsuario: ${message}`;
   } else {
-    promptText = `OBJETIVO: Eres un asistente académico de excelencia para un examen universitario de ingeniería y sistemas.
-Debes responder cumpliendo con:
-- Máximo dominio conceptual y precisión técnica formal.
-- Desarrollo analítico y bien fundamentado.
-- Ejemplos prácticos y pertinentes.
-- Justificación técnica rigurosa de las decisiones.
-- Organización clara y estructurada.
-
-${historyText ? `=== HISTORIAL RECIENTE DE LA CONVERSACIÓN ===\n${historyText}\n=== FIN HISTORIAL ===\n\n` : ""}CONSULTA DEL EXAMEN A RESPONDER:
-${message}`;
+    promptText = message;
   }
 
-  const models = [
+  // Sole system instruction: clean plain text, no markdown formatting
+  const systemInstruction = 
+    "INSTRUCCIÓN OBLIGATORIA DE FORMATO:\n" +
+    "Responde siempre en texto plano, limpio y ordenado.\n" +
+    "NO utilices ningún símbolo de formato Markdown bajo ninguna circunstancia:\n" +
+    "- Está estrictamente prohibido usar asteriscos (* o ** o ***), ya sea para negritas, cursivas o viñetas.\n" +
+    "- Está prohibido usar numerales (#, ##, ###) para títulos.\n" +
+    "- Está prohibido usar guiones decorativos o líneas separadoras (como --, --- o ___).\n" +
+    "- Si necesitas listar o enumerar puntos, hazlo únicamente usando números simples (1., 2., 3.) o saltos de línea ordenados.\n" +
+    "- El texto debe ser totalmente claro, legible y sin etiquetas ni símbolos especiales de marcado.";
+
+  const preferredModel = (userModel && userModel.trim()) ? userModel.trim() : (process.env.GEMINI_MODEL || "gemini-3.5-flash");
+  const candidates = [
     "gemini-3.5-flash",
-    "gemini-3.5-flash-lite",
     "gemini-3.8-flash",
+    "gemini-3.5-flash-lite",
     "gemini-flash-latest"
   ];
+  const models = [preferredModel, ...candidates.filter((m) => m !== preferredModel)];
   let lastError = null;
 
   for (const model of models) {
@@ -257,10 +303,13 @@ ${message}`;
           "X-goog-api-key": apiKey,
         },
         body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: systemInstruction }],
+          },
           contents: [{ parts: [{ text: promptText }] }],
           generationConfig: { temperature: 0.2, maxOutputTokens: 2048 },
         }),
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(20000),
       });
 
       const data = await res.json();
@@ -279,10 +328,11 @@ ${message}`;
 
       const parts = candidate.content?.parts || [];
       const textParts = parts.map((p) => p.text).filter(Boolean);
-      const fullText = textParts.join("\n\n").trim();
+      let fullText = textParts.join("\n\n").trim();
 
       if (fullText) {
-        log(`Model ${model} succeeded! Length: ${fullText.length}`);
+        fullText = cleanTextFormatting(fullText);
+        log(`Model ${model} succeeded! Clean length: ${fullText.length}`);
         return { text: fullText, model };
       } else {
         lastError = "Respuesta vacía del modelo";

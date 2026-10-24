@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer, webUtils } = require("electron");
 contextBridge.exposeInMainWorld("ghostAPI", {
   sendMessage: (data) => ipcRenderer.invoke("ai-request", data),
   setOpacity: (val) => ipcRenderer.invoke("set-opacity", val),
+  setTheme: (theme) => ipcRenderer.invoke("set-theme", theme),
   getClipboard: () => ipcRenderer.invoke("get-clipboard"),
   getSelectedText: () => ipcRenderer.invoke("get-selected-text"),
   selectDocument: () => ipcRenderer.invoke("select-document"),
