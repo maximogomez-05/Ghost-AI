@@ -1,0 +1,27 @@
+# Node dependencies
+node_modules/
+package-lock.json
+
+# Logs and runtime files
+*.log
+debug.log
+
+# Build / dist artifacts
+dist/
+*.zip
+*.exe
+!copier.exe
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Media
+*.mkv
+*.mp4
+*.avi
+*.mov

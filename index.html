@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ghost AI</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-app: #ffffff;
+      --bg-header: #f8fafc;
+      --bg-bar: #f8fafc;
+      --border-subtle: #e2e8f0;
+      --border-focus: #94a3b8;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+
+      --btn-primary-bg: #e2e8f0;
+      --btn-primary-border: #94a3b8;
+      --btn-primary-text: #1e293b;
+      --btn-primary-hover: #cbd5e1;
+
+      --btn-secondary-bg: #ffffff;
+      --btn-secondary-text: #334155;
+      --btn-secondary-border: #cbd5e1;
+      --btn-secondary-hover: #f1f5f9;
+
+      --badge-bg: #f1f5f9;
+      --badge-border: #cbd5e1;
+      --badge-text: #334155;
+
+      --status-safe-bg: #f8fafc;
+      --status-safe-border: #cbd5e1;
+      --status-safe-text: #475569;
+
+      --status-active-bg: #e2e8f0;
+      --status-active-border: #94a3b8;
+      --status-active-text: #1e293b;
+
+      --msg-user-bg: #f1f5f9;
+      --msg-user-text: #0f172a;
+      --msg-user-border: #e2e8f0;
+
+      --msg-ai-bg: #ffffff;
+      --msg-ai-text: #0f172a;
+      --msg-ai-border: #e2e8f0;
+
+      --msg-hint-bg: #f8fafc;
+      --msg-hint-text: #475569;
+      --msg-hint-border: #cbd5e1;
+
+      --msg-warning-bg: #f8fafc;
+      --msg-warning-text: #64748b;
+      --msg-warning-border: #cbd5e1;
+
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+      --input-text: #0f172a;
+
+      --modal-overlay: rgba(15, 23, 42, 0.45);
+      --modal-bg: #ffffff;
+      --modal-border: #e2e8f0;
+
+      --pill-bg: #f1f5f9;
+      --pill-border: #cbd5e1;
+      --pill-text: #334155;
+    }
+
+    body.dark {
+      --bg-app: #0f172a;
+      --bg-header: #1e293b;
+      --bg-bar: #1e293b;
+      --border-subtle: #334155;
+      --border-focus: #64748b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --btn-primary-bg: #283548;
+      --btn-primary-border: #475569;
+      --btn-primary-text: #f8fafc;
+      --btn-primary-hover: #334155;
+
+      --btn-secondary-bg: #1e293b;
+      --btn-secondary-text: #e2e8f0;
+      --btn-secondary-border: #475569;
+      --btn-secondary-hover: #334155;
+
+      --badge-bg: #1e293b;
+      --badge-border: #475569;
+      --badge-text: #e2e8f0;
+
+      --status-safe-bg: #1e293b;
+      --status-safe-border: #475569;
+      --status-safe-text: #94a3b8;
+
+      --status-active-bg: #283548;
+      --status-active-border: #475569;
+      --status-active-text: #f8fafc;
+
+      --msg-user-bg: #334155;
+      --msg-user-text: #f8fafc;
+      --msg-user-border: #475569;
+
+      --msg-ai-bg: #1e293b;
+      --msg-ai-text: #f8fafc;
+      --msg-ai-border: #334155;
+
+      --msg-hint-bg: #1e293b;
+      --msg-hint-text: #94a3b8;
+      --msg-hint-border: #475569;
+
+      --msg-warning-bg: #1e293b;
+      --msg-warning-text: #94a3b8;
+      --msg-warning-border: #475569;
+
+      --input-bg: #1e293b;
+      --input-border: #475569;
+      --input-text: #f8fafc;
+
+      --modal-overlay: rgba(0, 0, 0, 0.7);
+      --modal-bg: #1e293b;
+      --modal-border: #334155;
+
+      --pill-bg: #1e293b;
+      --pill-border: #475569;
+      --pill-text: #e2e8f0;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg-app);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    /* Drag & Drop Overlay */
+    #drop-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--modal-overlay);
+      border: 2px dashed var(--border-focus);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      pointer-events: none;
+      backdrop-filter: blur(2px);
+    }
+
+    #drop-overlay.active {
+      display: flex;
+    }
+
+    #drop-overlay .drop-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    #drop-overlay .drop-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Header */
+    #header {
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .status-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      background: var(--badge-bg);
+      border: 1px solid var(--badge-border);
+      padding: 3px 6px;
+      border-radius: 6px;
+    }
+
+    .model-dropdown {
+      background: transparent;
+      border: none;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--badge-text);
+      cursor: pointer;
+      outline: none;
+      font-family: inherit;
+      padding: 0;
+    }
+
+    .model-dropdown option {
+      background: var(--bg-app);
+      color: var(--text-main);
+    }
+
+    #focus-indicator {
+      font-size: 10.5px;
+      padding: 3px 6px;
+      border-radius: 6px;
+      font-weight: 600;
+      background: var(--status-safe-bg);
+      color: var(--status-safe-text);
+      border: 1px solid var(--status-safe-border);
+    }
+
+    #focus-indicator.active {
+      background: var(--status-active-bg);
+      color: var(--status-active-text);
+      border-color: var(--status-active-border);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .opacity-control {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .opacity-control input[type="range"] {
+      width: 55px;
+      cursor: pointer;
+      accent-color: var(--btn-primary-bg);
+    }
+
+    #opacity-val {
+      min-width: 26px;
+      text-align: right;
+    }
+
+    .btn-ctrl {
+      padding: 3px 8px;
+      background: var(--btn-secondary-bg);
+      border: 1px solid var(--btn-secondary-border);
+      color: var(--btn-secondary-text);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-ctrl:hover {
+      background: var(--btn-secondary-hover);
+      color: var(--text-main);
+    }
+
+    /* API Key Modal */
+    #api-modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--modal-overlay);
+      backdrop-filter: blur(2px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #api-modal.active { display: flex; }
+
+    .modal-card {
+      background: var(--modal-bg);
+      border: 1px solid var(--modal-border);
+      width: 100%;
+      max-width: 380px;
+      border-radius: 10px;
+      box-shadow: 0 16px 30px rgba(0,0,0,0.25);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .modal-card p {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .modal-card input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      font-size: 12px;
+      outline: none;
+      font-family: inherit;
+      background: var(--input-bg);
+      color: var(--input-text);
+    }
+    .modal-card input:focus {
+      border-color: var(--border-focus);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .btn-modal-save {
+      padding: 6px 14px;
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      border: 1px solid var(--btn-primary-border);
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-modal-save:hover {
+      background: var(--btn-primary-hover);
+    }
+
+    .btn-modal-cancel {
+      padding: 6px 12px;
+      background: var(--btn-secondary-bg);
+      color: var(--btn-secondary-text);
+      border: 1px solid var(--btn-secondary-border);
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-modal-cancel:hover {
+      background: var(--btn-secondary-hover);
+    }
+
+    /* Document Bar */
+    #doc-bar {
+      padding: 6px 12px;
+      background: var(--bg-bar);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .doc-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      overflow-x: auto;
+      white-space: nowrap;
+      flex: 1;
+      scrollbar-width: thin;
+      padding-bottom: 2px;
+      color: var(--text-muted);
+    }
+
+    .doc-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--pill-bg);
+      color: var(--pill-text);
+      border: 1px solid var(--pill-border);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-weight: 500;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    .doc-pill span {
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .doc-pill button {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 0 2px;
+      line-height: 1;
+    }
+    .doc-pill button:hover {
+      color: var(--text-main);
+    }
+
+    .btn-load-doc {
+      padding: 4px 8px;
+      border: 1px dashed var(--btn-secondary-border);
+      background: var(--btn-secondary-bg);
+      color: var(--btn-secondary-text);
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+    .btn-load-doc:hover {
+      background: var(--btn-secondary-hover);
+      color: var(--text-main);
+    }
+
+    /* Action Bar */
+    #quick-bar {
+      padding: 7px 12px;
+      background: var(--bg-app);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .quick-btn {
+      flex: 1.2;
+      padding: 6px 10px;
+      border: 1px solid var(--btn-primary-border);
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      font-size: 11.5px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.1s;
+      font-family: inherit;
+    }
+    .quick-btn:hover {
+      background: var(--btn-primary-hover);
+    }
+    .quick-btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      padding: 6px 9px;
+      border: 1px solid var(--btn-secondary-border);
+      background: var(--btn-secondary-bg);
+      color: var(--btn-secondary-text);
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-secondary:hover {
+      background: var(--btn-secondary-hover);
+      color: var(--text-main);
+    }
+
+    /* Chat Messages */
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: var(--bg-app);
+    }
+
+    .msg {
+      padding: 8px 11px;
+      border-radius: 8px;
+      line-height: 1.5;
+      max-width: 92%;
+      word-break: break-word;
+      white-space: pre-wrap;
+      font-size: 12.5px;
+    }
+
+    .msg.user {
+      background: var(--msg-user-bg);
+      color: var(--msg-user-text);
+      align-self: flex-end;
+      border-bottom-right-radius: 2px;
+      font-weight: 500;
+      border: 1px solid var(--msg-user-border);
+    }
+
+    .msg.ai {
+      background: var(--msg-ai-bg);
+      color: var(--msg-ai-text);
+      align-self: flex-start;
+      border-bottom-left-radius: 2px;
+      border: 1px solid var(--msg-ai-border);
+    }
+
+    .msg.hint {
+      background: var(--msg-hint-bg);
+      border: 1px dashed var(--msg-hint-border);
+      color: var(--msg-hint-text);
+      font-size: 11.5px;
+      align-self: center;
+      text-align: center;
+      line-height: 1.55;
+    }
+
+    .msg.warning {
+      background: var(--msg-warning-bg);
+      border: 1px solid var(--msg-warning-border);
+      color: var(--msg-warning-text);
+      font-size: 11.5px;
+    }
+
+    .loading-bubble {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .loading-dot {
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      animation: blink 1.2s infinite;
+    }
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+
+    /* Footer Input */
+    #footer {
+      padding: 8px 12px;
+      background: var(--bg-header);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      gap: 6px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+
+    #footer textarea {
+      flex: 1;
+      padding: 7px 10px;
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 12px;
+      resize: none;
+      min-height: 33px;
+      max-height: 85px;
+      outline: none;
+      line-height: 1.35;
+      background: var(--input-bg);
+      color: var(--input-text);
+    }
+
+    #footer textarea:focus {
+      border-color: var(--border-focus);
+    }
+
+    #send-btn {
+      padding: 0 14px;
+      height: 33px;
+      border: 1px solid var(--btn-primary-border);
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-family: inherit;
+      transition: background 0.1s;
+    }
+    #send-btn:hover {
+      background: var(--btn-primary-hover);
+    }
+    #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <!-- API Key Modal -->
+  <div id="api-modal">
+    <div class="modal-card">
+      <h3>Configurar Gemini API Key</h3>
+      <p>
+        Para usar Ghost AI necesitas ingresar tu propia clave de Google Gemini. Es gratuita y se genera en pocos segundos con tu cuenta de Google.
+      </p>
+      <input type="password" id="modal-apikey-input" placeholder="Pega tu API Key de Gemini aqui..." />
+      <div style="font-size:11px; color:var(--text-muted);">
+        Obtener clave gratuita en: <strong>aistudio.google.com/apikey</strong>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" id="btn-modal-cancel">Cancelar</button>
+        <button class="btn-modal-save" id="btn-modal-save">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drag and Drop Overlay -->
+  <div id="drop-overlay">
+    <div class="drop-text">Soltar archivo para cargar</div>
+    <div class="drop-sub">Se agregara como referencia para tus consultas</div>
+  </div>
+
+  <!-- Header -->
+  <div id="header">
+    <div class="status-group">
+      <div class="badge">
+        <select id="model-select" class="model-dropdown" title="Seleccionar modelo de Gemini">
+          <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+          <option value="gemini-3.8-flash">Gemini 3.8 Flash</option>
+        </select>
+      </div>
+      <span id="focus-indicator" title="Tocar esta ventana no le quita el foco a otras aplicaciones">Sin foco</span>
+    </div>
+    <div class="header-controls">
+      <button class="btn-ctrl" id="btn-theme-toggle" title="Alternar modo claro / oscuro">Oscuro</button>
+      <div class="opacity-control">
+        <span>Opacidad:</span>
+        <input type="range" id="opacity-slider" min="15" max="100" value="95" />
+        <span id="opacity-val">95%</span>
+      </div>
+      <button class="btn-ctrl" id="btn-open-apikey" title="Configurar tu clave de Google Gemini">API Key</button>
+    </div>
+  </div>
+
+  <!-- Document Bar -->
+  <div id="doc-bar">
+    <div class="doc-status" id="doc-status-container">
+      <span>Arrastra archivos o seleccionalos -></span>
+    </div>
+    <button class="btn-load-doc" id="btn-load-doc" title="Cargar PDF o documentos de referencia">
+      Cargar archivo
+    </button>
+  </div>
+
+  <!-- Action Bar -->
+  <div id="quick-bar">
+    <button class="quick-btn" id="btn-select" title="Selecciona texto en cualquier aplicacion y presiona este boton">
+      Preguntar seleccion
+    </button>
+    <button class="btn-secondary" id="btn-clip" title="Consulta lo que tengas copiado en el portapapeles">
+      Portapapeles
+    </button>
+    <button class="btn-secondary" id="btn-type-toggle" title="Activa el teclado para tipear manualmente">
+      Tipear
+    </button>
+    <button class="btn-secondary" id="btn-clear" title="Limpiar conversacion">
+      Limpiar
+    </button>
+  </div>
+
+  <!-- Chat -->
+  <div id="chat">
+    <div class="msg hint">
+      <strong>Ghost AI</strong><br/>
+      Arrastra archivos para usarlos de contexto en tus consultas.<br/>
+      Resalta texto en tu pantalla y toca "Preguntar seleccion".<br/>
+      Respuestas en texto plano y ordenado.
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div id="footer">
+    <textarea id="prompt-input" rows="1" placeholder="Escribe tu consulta..."></textarea>
+    <button id="send-btn" title="Enviar consulta">Enviar</button>
+  </div>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("prompt-input");
+    const sendBtn = document.getElementById("send-btn");
+    const slider = document.getElementById("opacity-slider");
+    const opacityVal = document.getElementById("opacity-val");
+    const btnSelect = document.getElementById("btn-select");
+    const btnClip = document.getElementById("btn-clip");
+    const btnClear = document.getElementById("btn-clear");
+    const btnTypeToggle = document.getElementById("btn-type-toggle");
+    const focusIndicator = document.getElementById("focus-indicator");
+    const btnLoadDoc = document.getElementById("btn-load-doc");
+    const docStatusContainer = document.getElementById("doc-status-container");
+    const dropOverlay = document.getElementById("drop-overlay");
+    const apiModal = document.getElementById("api-modal");
+    const btnOpenApiKey = document.getElementById("btn-open-apikey");
+    const modalApiKeyInput = document.getElementById("modal-apikey-input");
+    const btnModalSave = document.getElementById("btn-modal-save");
+    const btnModalCancel = document.getElementById("btn-modal-cancel");
+    const btnThemeToggle = document.getElementById("btn-theme-toggle");
+    const modelSelect = document.getElementById("model-select");
+
+    const STORAGE_KEY = "user_gemini_api_key";
+    const MODEL_STORAGE_KEY = "user_gemini_model";
+    const THEME_STORAGE_KEY = "ghost_theme";
+
+    // --- THEME MANAGEMENT ---
+    function applyTheme(theme) {
+      const isDark = theme === "dark";
+      document.body.classList.toggle("dark", isDark);
+      btnThemeToggle.textContent = isDark ? "Claro" : "Oscuro";
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+      if (window.ghostAPI && typeof window.ghostAPI.setTheme === "function") {
+        window.ghostAPI.setTheme(theme);
+      }
+    }
+
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || "light";
+    applyTheme(savedTheme);
+
+    btnThemeToggle.addEventListener("click", () => {
+      const current = document.body.classList.contains("dark") ? "dark" : "light";
+      const next = current === "dark" ? "light" : "dark";
+      applyTheme(next);
+    });
+
+    // --- MODEL PREFERENCE ---
+    if (localStorage.getItem(MODEL_STORAGE_KEY) && modelSelect) {
+      modelSelect.value = localStorage.getItem(MODEL_STORAGE_KEY);
+    }
+    if (modelSelect) {
+      modelSelect.addEventListener("change", () => {
+        localStorage.setItem(MODEL_STORAGE_KEY, modelSelect.value);
+      });
+    }
+
+    // --- API KEY MANAGEMENT ---
+    function getSavedApiKey() {
+      return localStorage.getItem(STORAGE_KEY) || "";
+    }
+
+    btnOpenApiKey.addEventListener("click", () => {
+      modalApiKeyInput.value = getSavedApiKey();
+      apiModal.classList.add("active");
+      modalApiKeyInput.focus();
+    });
+
+    btnModalCancel.addEventListener("click", () => {
+      apiModal.classList.remove("active");
+    });
+
+    btnModalSave.addEventListener("click", () => {
+      const val = modalApiKeyInput.value.trim();
+      if (!val) {
+        alert("Por favor ingresa una API Key valida de Google Gemini.");
+        return;
+      }
+      localStorage.setItem(STORAGE_KEY, val);
+      apiModal.classList.remove("active");
+      addMsg("ai", "API Key guardada con exito.");
+    });
+
+    let isBusy = false;
+    let typingMode = false;
+    let activeDocuments = []; // Array of { name, content, charCount }
+    let conversationHistory = []; // [ { role: 'user'|'model', content: '...' } ]
+
+    // --- DRAG AND DROP HANDLERS ---
+    let dragCounter = 0;
+
+    window.addEventListener("dragenter", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter++;
+      dropOverlay.classList.add("active");
+    });
+
+    window.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = "copy";
+      dropOverlay.classList.add("active");
+    });
+
+    window.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter--;
+      if (dragCounter <= 0) {
+        dragCounter = 0;
+        dropOverlay.classList.remove("active");
+      }
+    });
+
+    window.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter = 0;
+      dropOverlay.classList.remove("active");
+
+      const files = e.dataTransfer.files;
+      if (!files || files.length === 0) return;
+
+      addMsg("user", `Procesando ${files.length} archivo(s)...`);
+
+      let added = 0;
+      for (const file of files) {
+        const filePath = window.ghostAPI.getPathForFile(file);
+        try {
+          let doc = null;
+          if (filePath) {
+            doc = await window.ghostAPI.loadDocumentPath(filePath);
+          } else {
+            const arrayBuffer = await file.arrayBuffer();
+            doc = await window.ghostAPI.loadDocumentBuffer(file.name, arrayBuffer);
+          }
+
+          if (doc && !doc.error) {
+            if (addDocumentToList(doc)) added++;
+          } else if (doc && doc.error) {
+            addMsg("ai", `Error al cargar "${file.name}": ${doc.error}`);
+          }
+        } catch (err) {
+          addMsg("ai", `Error al cargar "${file.name}": ${err.message}`);
+        }
+      }
+
+      if (added > 0) {
+        updateDocUI();
+        const totalChars = activeDocuments.reduce((acc, d) => acc + d.charCount, 0);
+        addMsg("ai", `${added} documento(s) cargado(s) exitosamente. Total: ${activeDocuments.length} (${totalChars.toLocaleString()} caracteres).`);
+      }
+    });
+
+    // Opacity
+    slider.addEventListener("input", () => {
+      const v = slider.value;
+      opacityVal.textContent = v + "%";
+      window.ghostAPI.setOpacity(v / 100);
+    });
+
+    // Clear
+    btnClear.addEventListener("click", () => {
+      conversationHistory = [];
+      const docCount = activeDocuments.length;
+      chat.innerHTML = `
+        <div class="msg hint">
+          <strong>Ghost AI</strong><br/>
+          ${docCount > 0 ? `Documentos cargados en memoria: <strong>${docCount}</strong>.` : 'Arrastra archivos para usarlos de contexto.'}
+        </div>`;
+    });
+
+    function addDocumentToList(doc) {
+      if (!doc || !doc.name) return false;
+      const exists = activeDocuments.some(d => d.name === doc.name);
+      if (exists) {
+        addMsg("warning", `El documento "${doc.name}" ya esta cargado.`);
+        return false;
+      }
+      activeDocuments.push(doc);
+      return true;
+    }
+
+    function removeDocument(idx) {
+      const removed = activeDocuments.splice(idx, 1)[0];
+      updateDocUI();
+      addMsg("ai", `Se quito "${removed.name}". Quedan ${activeDocuments.length} documento(s).`);
+    }
+
+    function updateDocUI() {
+      if (activeDocuments.length > 0) {
+        const pillsHtml = activeDocuments.map((doc, idx) => `
+          <div class="doc-pill" title="${doc.name} (${doc.charCount.toLocaleString()} caracteres)">
+            <span>${doc.name}</span>
+            <button onclick="removeDocByIndex(${idx})" title="Quitar">X</button>
+          </div>
+        `).join("");
+
+        docStatusContainer.innerHTML = pillsHtml;
+        btnLoadDoc.textContent = "Agregar archivo";
+      } else {
+        docStatusContainer.innerHTML = `<span>Arrastra archivos o seleccionalos -></span>`;
+        btnLoadDoc.textContent = "Cargar archivo";
+      }
+    }
+
+    window.removeDocByIndex = removeDocument;
+
+    // Document Loading via dialog button
+    btnLoadDoc.addEventListener("click", async () => {
+      try {
+        const docs = await window.ghostAPI.selectDocument();
+        if (!docs || !docs.length) return;
+
+        let addedCount = 0;
+        for (const doc of docs) {
+          if (addDocumentToList(doc)) addedCount++;
+        }
+
+        if (addedCount > 0) {
+          updateDocUI();
+          const totalChars = activeDocuments.reduce((acc, d) => acc + d.charCount, 0);
+          addMsg("ai", `${addedCount} documento(s) agregado(s). Total: ${activeDocuments.length} (${totalChars.toLocaleString()} caracteres).`);
+        }
+      } catch (err) {
+        addMsg("ai", "Error al seleccionar documentos: " + err.message);
+      }
+    });
+
+    // Typing Mode Toggle
+    async function setTypingMode(enable) {
+      typingMode = enable;
+      if (typingMode) {
+        focusIndicator.textContent = "Modo teclado";
+        focusIndicator.classList.add("active");
+        btnTypeToggle.textContent = "Bloquear foco";
+        await window.ghostAPI.setFocusMode(true);
+        input.focus();
+      } else {
+        focusIndicator.textContent = "Sin foco";
+        focusIndicator.classList.remove("active");
+        btnTypeToggle.textContent = "Tipear";
+        input.blur();
+        await window.ghostAPI.setFocusMode(false);
+      }
+    }
+
+    btnTypeToggle.addEventListener("click", () => {
+      setTypingMode(!typingMode);
+    });
+
+    window.ghostAPI.onFocusStateChanged((state) => {
+      typingMode = state;
+      if (typingMode) {
+        focusIndicator.textContent = "Modo teclado";
+        focusIndicator.classList.add("active");
+        btnTypeToggle.textContent = "Bloquear foco";
+        input.focus();
+      } else {
+        focusIndicator.textContent = "Sin foco";
+        focusIndicator.classList.remove("active");
+        btnTypeToggle.textContent = "Tipear";
+        input.blur();
+      }
+    });
+
+    input.addEventListener("mousedown", () => {
+      if (!typingMode) setTypingMode(true);
+    });
+
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 85) + "px";
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        send(input.value.trim());
+        setTypingMode(false);
+      } else if (e.key === "Escape") {
+        setTypingMode(false);
+      }
+    });
+
+    sendBtn.addEventListener("click", () => {
+      send(input.value.trim());
+      setTypingMode(false);
+    });
+
+    // Ask selected text
+    async function askSelected() {
+      if (isBusy) {
+        addMsg("warning", "Hay una consulta en proceso, por favor espera...");
+        return;
+      }
+
+      let text = "";
+      try {
+        text = await window.ghostAPI.getSelectedText();
+      } catch (err) {
+        addMsg("ai", "Error al capturar seleccion: " + err.message);
+        return;
+      }
+
+      if (!text || !text.trim()) {
+        addMsg("warning", "No se detecto texto seleccionado en la pantalla.\nResalta el texto con el mouse y vuelve a tocar 'Preguntar seleccion'.");
+        return;
+      }
+
+      send(text.trim());
+    }
+
+    btnSelect.addEventListener("click", askSelected);
+
+    // Ask from clipboard
+    async function askFromClipboard() {
+      if (isBusy) {
+        addMsg("warning", "Hay una consulta en proceso, por favor espera...");
+        return;
+      }
+
+      let text = "";
+      try {
+        text = await window.ghostAPI.getClipboard();
+      } catch (err) {
+        addMsg("ai", "Error leyendo portapapeles: " + err.message);
+        return;
+      }
+
+      if (!text || !text.trim()) {
+        addMsg("warning", "El portapapeles esta vacio.\nCopia el texto deseado (Ctrl+C) y vuelve a intentar.");
+        return;
+      }
+
+      send(text.trim());
+    }
+
+    btnClip.addEventListener("click", askFromClipboard);
+    window.ghostAPI.onAskClipboard(askFromClipboard);
+
+    function cleanClientText(str) {
+      if (!str) return "";
+      return str
+        .replace(/^#{1,6}\s+/gm, "")
+        .replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1")
+        .replace(/_{1,3}([^_]+)_{1,3}/g, "$1")
+        .replace(/^[-*_]{3,}\s*$/gm, "")
+        .replace(/^[\*\-]\s+/gm, "• ")
+        .replace(/`([^`]+)`/g, "$1")
+        .replace(/```[a-zA-Z]*\n?/g, "")
+        .replace(/\*+/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    }
+
+    function addMsg(type, text) {
+      if (type === "ai") text = cleanClientText(text);
+      const el = document.createElement("div");
+      el.className = `msg ${type}`;
+      el.textContent = text;
+      chat.appendChild(el);
+      chat.scrollTop = chat.scrollHeight;
+      return el;
+    }
+
+    async function send(text) {
+      if (!text || isBusy) return;
+      isBusy = true;
+      sendBtn.disabled = true;
+      btnClip.disabled = true;
+      btnSelect.disabled = true;
+      input.value = "";
+      input.style.height = "auto";
+
+      const apiKey = getSavedApiKey();
+      if (!apiKey) {
+        apiModal.classList.add("active");
+        addMsg("warning", "Debes configurar tu Gemini API Key primero presionando el boton 'API Key'.");
+        isBusy = false;
+        sendBtn.disabled = false;
+        btnClip.disabled = false;
+        btnSelect.disabled = false;
+        return;
+      }
+
+      addMsg("user", text);
+
+      const loadingEl = document.createElement("div");
+      loadingEl.className = "msg ai";
+      const docCount = activeDocuments.length;
+      loadingEl.innerHTML = `
+        <div class="loading-bubble">
+          <span>${docCount > 0 ? `Consultando con base en ${docCount} documento(s)...` : 'Consultando IA...'}</span>
+          <span class="loading-dot"></span>
+          <span class="loading-dot"></span>
+          <span class="loading-dot"></span>
+        </div>`;
+      chat.appendChild(loadingEl);
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const payload = {
+          message: text,
+          documents: activeDocuments.map(d => ({ name: d.name, content: d.content })),
+          userApiKey: apiKey,
+          model: modelSelect ? modelSelect.value : "gemini-3.5-flash",
+          history: conversationHistory.slice(-6),
+        };
+
+        const res = await window.ghostAPI.sendMessage(payload);
+        loadingEl.remove();
+        if (res.error) {
+          addMsg("ai", "Error: " + res.error);
+        } else {
+          addMsg("ai", res.text);
+          conversationHistory.push({ role: "user", content: text });
+          conversationHistory.push({ role: "model", content: res.text });
+        }
+      } catch (err) {
+        loadingEl.remove();
+        addMsg("ai", "Error de conexion: " + err.message);
+      }
+
+      isBusy = false;
+      sendBtn.disabled = false;
+      btnClip.disabled = false;
+      btnSelect.disabled = false;
+    }
+  </script>
+</body>
+</html>
