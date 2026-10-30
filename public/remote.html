@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Ghost Remote — Antigravity Mobile</title>
+  <!-- Marked.js for markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #10b981;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --code-bg: #090d16;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background-color: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      font-size: 22px;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-remote {
+      background: rgba(99, 102, 241, 0.2);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .connection-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #ef4444;
+      transition: background-color 0.3s;
+    }
+
+    .status-dot.connected {
+      background-color: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    main {
+      flex: 1;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .controls-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    select, textarea, input {
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    select:focus, textarea:focus {
+      border-color: var(--primary);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button.btn-primary {
+      flex: 1;
+    }
+
+    button.btn-secondary {
+      background-color: #334155;
+      color: #e2e8f0;
+    }
+
+    button.btn-accent {
+      background-color: var(--accent);
+      color: #064e3b;
+    }
+
+    /* Solution Box */
+    #solution-card {
+      display: none;
+    }
+
+    .solution-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+
+    .solution-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #a5b4fc;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .solution-content {
+      font-size: 13px;
+      color: #e2e8f0;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+
+    /* Markdown Styling */
+    .solution-content h1, .solution-content h2, .solution-content h3 {
+      color: #f1f5f9;
+      margin: 16px 0 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 4px;
+    }
+
+    .solution-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 12px;
+      overflow-x: auto;
+      display: block;
+    }
+
+    .solution-content th, .solution-content td {
+      border: 1px solid #475569;
+      padding: 6px 10px;
+      text-align: center;
+    }
+
+    .solution-content th {
+      background: #1e1b4b;
+      color: #c7d2fe;
+    }
+
+    .solution-content code {
+      background: var(--code-bg);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+      font-size: 12px;
+      color: #38bdf8;
+    }
+
+    .solution-content pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+
+    .export-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .download-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Live Sync Banner */
+    .sync-banner {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px dashed var(--primary);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 11px;
+      color: #a5b4fc;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span class="brand-icon">👻</span>
+      <div>
+        <div class="brand-title">
+          Ghost Remote <span class="badge-remote">Antigravity</span>
+        </div>
+      </div>
+    </div>
+    <div class="connection-status">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">Conectando...</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Sync Notice -->
+    <div class="sync-banner">
+      <span>📡 Sincronización en vivo activada con tu PC (Word y Flotante).</span>
+      <span id="live-time" style="font-weight: 600;"></span>
+    </div>
+
+    <!-- Question Input Card -->
+    <div class="card">
+      <div class="controls-grid">
+        <div class="field-group">
+          <label>Motor de Inteligencia</label>
+          <select id="engine-select">
+            <optgroup label="Antigravity">
+              <option value="gemini-3.8-flash-high" selected>Gemini 3.8 Flash HIGH (Razonamiento)</option>
+              <option value="claude-sonnet-4.6">Claude Sonnet 4.6 (Thinking)</option>
+              <option value="claude-opus-4.6">Claude Opus 4.6 (Thinking)</option>
+              <option value="gpt-oss-120b">GPT-OSS 120B (Medium)</option>
+              <option value="antigravity">Antigravity Solver (Python Exacto)</option>
+            </optgroup>
+            <optgroup label="Directo (API Key)">
+              <option value="gemini-3.5-flash">Gemini 3.5 Flash (Directo)</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Tipo de Ejercicio</label>
+          <select id="type-select">
+            <option value="auto">Auto-Detectar</option>
+            <option value="simplex">Programación Lineal (Simplex)</option>
+            <option value="pert">Redes / PERT - CPM</option>
+            <option value="transporte">Transporte (Noroeste/Vogel/MODI)</option>
+            <option value="hungaro">Asignación (Húngaro)</option>
+            <option value="decision">Teoría de Decisión</option>
+            <option value="arbol">Árboles de Decisión</option>
+            <option value="teoria">Pregunta Teórica</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Consigna del Ejercicio o Pregunta</label>
+        <textarea id="prompt-input" placeholder="Escribe o pega aquí el ejercicio desde tu celular o notebook remota..."></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button id="btn-solve" class="btn-primary">
+          <span id="btn-solve-text">🚀 Resolver Ejercicio</span>
+        </button>
+        <button id="btn-clear" class="btn-secondary" title="Limpiar">🗑️</button>
+      </div>
+    </div>
+
+    <!-- Solution Card -->
+    <div class="card" id="solution-card">
+      <div class="solution-header">
+        <div class="solution-title">
+          <span>📝 Resolución Oficial Verificada</span>
+        </div>
+        <button id="btn-copy" class="btn-secondary" style="padding: 4px 10px; font-size: 11px;">📋 Copiar</button>
+      </div>
+
+      <div class="solution-content" id="solution-body"></div>
+
+      <!-- Export Actions -->
+      <div class="export-actions">
+        <button id="btn-export-docx" class="btn-secondary" style="font-size: 12px;">
+          📄 Generar Word (.docx)
+        </button>
+        <button id="btn-export-pdf" class="btn-secondary" style="font-size: 12px;">
+          📕 Generar PDF
+        </button>
+        <div id="download-links" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+    const engineSelect = document.getElementById('engine-select');
+    const typeSelect = document.getElementById('type-select');
+    const promptInput = document.getElementById('prompt-input');
+    const btnSolve = document.getElementById('btn-solve');
+    const btnSolveText = document.getElementById('btn-solve-text');
+    const btnClear = document.getElementById('btn-clear');
+    const btnCopy = document.getElementById('btn-copy');
+    const solutionCard = document.getElementById('solution-card');
+    const solutionBody = document.getElementById('solution-body');
+    const btnExportDocx = document.getElementById('btn-export-docx');
+    const btnExportPdf = document.getElementById('btn-export-pdf');
+    const downloadLinks = document.getElementById('download-links');
+    const liveTime = document.getElementById('live-time');
+
+    let currentSolutionMarkdown = "";
+    let currentExerciseText = "";
+
+    // Clock
+    setInterval(() => {
+      const now = new Date();
+      liveTime.textContent = now.toLocaleTimeString();
+    }, 1000);
+
+    // Setup Server-Sent Events (SSE) for Real-Time PC Sync
+    function initSSE() {
+      const es = new EventSource('/api/events');
+      
+      es.onopen = () => {
+        statusDot.classList.add('connected');
+        statusText.textContent = "PC Conectada";
+      };
+
+      es.onerror = () => {
+        statusDot.classList.remove('connected');
+        statusText.textContent = "Reconectando...";
+      };
+
+      // When Word or Floating app solves something on desktop
+      es.addEventListener('solution', (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          displaySolution(data.solution, data.prompt);
+        } catch (err) {
+          console.error("SSE parse error", err);
+        }
+      });
+
+      // When text is copied or queried in PC
+      es.addEventListener('query', (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data.prompt && !promptInput.value) {
+            promptInput.value = data.prompt;
+          }
+        } catch (err) {}
+      });
+    }
+
+    // Display Solution
+    function displaySolution(markdown, prompt) {
+      currentSolutionMarkdown = markdown;
+      currentExerciseText = prompt || promptInput.value;
+      solutionCard.style.display = 'block';
+      solutionBody.innerHTML = marked.parse(markdown);
+      downloadLinks.innerHTML = '';
+      solutionCard.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Solve Button
+    btnSolve.addEventListener('click', async () => {
+      const prompt = promptInput.value.trim();
+      if (!prompt) {
+        alert("Por favor ingresa la consigna del ejercicio.");
+        return;
+      }
+
+      btnSolve.disabled = true;
+      btnSolveText.innerHTML = '<span class="loading-spinner"></span> Resolviendo con Antigravity...';
+
+      try {
+        const res = await fetch('/api/solve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: prompt,
+            type: typeSelect.value,
+            engine: engineSelect.value
+          })
+        });
+
+        const data = await res.json();
+        if (data.error) {
+          alert("Error: " + data.error);
+        } else {
+          displaySolution(data.solution, prompt);
+        }
+      } catch (err) {
+        alert("Error de conexión con el puente Antigravity: " + err.message);
+      } finally {
+        btnSolve.disabled = false;
+        btnSolveText.textContent = '🚀 Resolver Ejercicio';
+      }
+    });
+
+    // Clear Button
+    btnClear.addEventListener('click', () => {
+      promptInput.value = '';
+      solutionCard.style.display = 'none';
+      downloadLinks.innerHTML = '';
+    });
+
+    // Copy Button
+    btnCopy.addEventListener('click', () => {
+      if (currentSolutionMarkdown) {
+        navigator.clipboard.writeText(currentSolutionMarkdown);
+        btnCopy.textContent = '✅ Copiado';
+        setTimeout(() => btnCopy.textContent = '📋 Copiar', 2000);
+      }
+    });
+
+    // Export Handler
+    async function triggerExport(format) {
+      if (!currentSolutionMarkdown) return;
+      const btn = (format === 'docx') ? btnExportDocx : btnExportPdf;
+      const oldText = btn.textContent;
+      btn.innerHTML = '<span class="loading-spinner"></span> Exportando...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/export', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: "Resolución Oficial de Ejercicio",
+            exerciseText: currentExerciseText,
+            markdown: currentSolutionMarkdown,
+            format: format
+          })
+        });
+
+        const data = await res.json();
+        if (data.ok && data.url) {
+          const a = document.createElement('a');
+          a.href = data.url;
+          a.target = '_blank';
+          a.className = 'download-badge';
+          a.innerHTML = `📥 Descargar ${format.toUpperCase()}`;
+          downloadLinks.appendChild(a);
+          // Auto click to trigger download
+          window.open(data.url, '_blank');
+        } else {
+          alert("No se pudo generar el enlace remoto.");
+        }
+      } catch (err) {
+        alert("Error al exportar: " + err.message);
+      } finally {
+        btn.innerHTML = oldText;
+        btn.disabled = false;
+      }
+    }
+
+    btnExportDocx.addEventListener('click', () => triggerExport('docx'));
+    btnExportPdf.addEventListener('click', () => triggerExport('pdf'));
+
+    // Start SSE on page load
+    initSSE();
+  </script>
+</body>
+</html>

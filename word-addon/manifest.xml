@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+           xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+           xsi:type="TaskPaneApp">
+  <Id>a0d3f71e-f745-403e-8911-ab12c5f41873</Id>
+  <Version>1.0.0.2</Version>
+  <ProviderName>&#x200B;</ProviderName>
+  <DefaultLocale>es-ES</DefaultLocale>
+  <DisplayName DefaultValue="&#x200B;" />
+  <Description DefaultValue="&#x200B;" />
+  <IconUrl DefaultValue="https://skg0d.github.io/ghost-ai-assistant/word-addon/icon-32.png" />
+  <HighResolutionIconUrl DefaultValue="https://skg0d.github.io/ghost-ai-assistant/word-addon/icon-64.png" />
+  <SupportUrl DefaultValue="https://github.com/Skg0d/ghost-ai-assistant" />
+  <AppDomains>
+    <AppDomain>https://generativelanguage.googleapis.com</AppDomain>
+    <AppDomain>https://skg0d.github.io</AppDomain>
+  </AppDomains>
+  <Hosts>
+    <Host Name="Document" />
+  </Hosts>
+  <DefaultSettings>
+    <SourceLocation DefaultValue="https://skg0d.github.io/ghost-ai-assistant/word-addon/taskpane.html" />
+  </DefaultSettings>
+  <Permissions>ReadWriteDocument</Permissions>
+
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <Hosts>
+      <Host xsi:type="Document">
+        <DesktopFormFactor>
+          <ExtensionPoint xsi:type="PrimaryCommandSurface">
+            <CustomTab id="GhostAI.Tab">
+              <Group id="GhostAI.Group">
+                <Label resid="GhostAI.GroupLabel" />
+                <Icon>
+                  <bt:Image size="16" resid="GhostAI.Icon16" />
+                  <bt:Image size="32" resid="GhostAI.Icon32" />
+                  <bt:Image size="80" resid="GhostAI.Icon80" />
+                </Icon>
+                <Control xsi:type="Button" id="GhostAI.TaskpaneButton">
+                  <Label resid="GhostAI.ButtonLabel" />
+                  <Supertip>
+                    <Title resid="GhostAI.ButtonLabel" />
+                    <Description resid="GhostAI.ButtonTooltip" />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="GhostAI.Icon16" />
+                    <bt:Image size="32" resid="GhostAI.Icon32" />
+                    <bt:Image size="80" resid="GhostAI.Icon80" />
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>GhostAITaskpane</TaskpaneId>
+                    <SourceLocation resid="GhostAI.TaskpaneUrl" />
+                  </Action>
+                </Control>
+              </Group>
+              <Label resid="GhostAI.TabLabel" />
+            </CustomTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+    <Resources>
+      <bt:Images>
+        <bt:Image id="GhostAI.Icon16" DefaultValue="https://skg0d.github.io/ghost-ai-assistant/word-addon/icon-16.png" />
+        <bt:Image id="GhostAI.Icon32" DefaultValue="https://skg0d.github.io/ghost-ai-assistant/word-addon/icon-32.png" />
+        <bt:Image id="GhostAI.Icon80" DefaultValue="https://skg0d.github.io/ghost-ai-assistant/word-addon/icon-80.png" />
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="GhostAI.TaskpaneUrl" DefaultValue="https://skg0d.github.io/ghost-ai-assistant/word-addon/taskpane.html" />
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="GhostAI.TabLabel" DefaultValue="&#x200B;" />
+        <bt:String id="GhostAI.GroupLabel" DefaultValue="&#x200B;" />
+        <bt:String id="GhostAI.ButtonLabel" DefaultValue="&#x200B;" />
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="GhostAI.ButtonTooltip" DefaultValue="&#x200B;" />
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+</OfficeApp>

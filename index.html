@@ -3,130 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ghost AI</title>
+  <title>Ghost AI - Antigravity Grounded Overlay</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
       --bg-app: #ffffff;
       --bg-header: #f8fafc;
-      --bg-bar: #f8fafc;
-      --border-subtle: #e2e8f0;
-      --border-focus: #94a3b8;
+      --bg-card: #f8fafc;
+      --bg-card-hover: #f1f5f9;
+      --bg-input: #ffffff;
+      --border-main: #e2e8f0;
+      --border-btn: #cbd5e1;
       --text-main: #0f172a;
       --text-muted: #64748b;
-      --text-dim: #94a3b8;
-
-      --btn-primary-bg: #e2e8f0;
-      --btn-primary-border: #94a3b8;
-      --btn-primary-text: #1e293b;
-      --btn-primary-hover: #cbd5e1;
-
+      --btn-primary-bg: #000000;
+      --btn-primary-fg: #ffffff;
+      --btn-primary-hover: #262626;
       --btn-secondary-bg: #ffffff;
-      --btn-secondary-text: #334155;
+      --btn-secondary-fg: #0f172a;
       --btn-secondary-border: #cbd5e1;
       --btn-secondary-hover: #f1f5f9;
-
-      --badge-bg: #f1f5f9;
-      --badge-border: #cbd5e1;
-      --badge-text: #334155;
-
-      --status-safe-bg: #f8fafc;
-      --status-safe-border: #cbd5e1;
-      --status-safe-text: #475569;
-
-      --status-active-bg: #e2e8f0;
-      --status-active-border: #94a3b8;
-      --status-active-text: #1e293b;
-
       --msg-user-bg: #f1f5f9;
-      --msg-user-text: #0f172a;
-      --msg-user-border: #e2e8f0;
-
+      --msg-user-fg: #0f172a;
+      --msg-user-border: #cbd5e1;
       --msg-ai-bg: #ffffff;
-      --msg-ai-text: #0f172a;
+      --msg-ai-fg: #0f172a;
       --msg-ai-border: #e2e8f0;
-
       --msg-hint-bg: #f8fafc;
-      --msg-hint-text: #475569;
       --msg-hint-border: #cbd5e1;
-
-      --msg-warning-bg: #f8fafc;
-      --msg-warning-text: #64748b;
-      --msg-warning-border: #cbd5e1;
-
-      --input-bg: #ffffff;
-      --input-border: #cbd5e1;
-      --input-text: #0f172a;
-
-      --modal-overlay: rgba(15, 23, 42, 0.45);
+      --msg-hint-fg: #334155;
+      --focus-bg: #f8fafc;
+      --focus-fg: #0f172a;
+      --focus-border: #0f172a;
+      --focus-active-bg: #000000;
+      --focus-active-fg: #ffffff;
+      --focus-active-border: #000000;
       --modal-bg: #ffffff;
-      --modal-border: #e2e8f0;
-
-      --pill-bg: #f1f5f9;
-      --pill-border: #cbd5e1;
-      --pill-text: #334155;
     }
 
-    body.dark {
-      --bg-app: #0f172a;
-      --bg-header: #1e293b;
-      --bg-bar: #1e293b;
-      --border-subtle: #334155;
-      --border-focus: #64748b;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
-
-      --btn-primary-bg: #283548;
-      --btn-primary-border: #475569;
-      --btn-primary-text: #f8fafc;
-      --btn-primary-hover: #334155;
-
-      --btn-secondary-bg: #1e293b;
-      --btn-secondary-text: #e2e8f0;
-      --btn-secondary-border: #475569;
-      --btn-secondary-hover: #334155;
-
-      --badge-bg: #1e293b;
-      --badge-border: #475569;
-      --badge-text: #e2e8f0;
-
-      --status-safe-bg: #1e293b;
-      --status-safe-border: #475569;
-      --status-safe-text: #94a3b8;
-
-      --status-active-bg: #283548;
-      --status-active-border: #475569;
-      --status-active-text: #f8fafc;
-
-      --msg-user-bg: #334155;
-      --msg-user-text: #f8fafc;
-      --msg-user-border: #475569;
-
-      --msg-ai-bg: #1e293b;
-      --msg-ai-text: #f8fafc;
-      --msg-ai-border: #334155;
-
-      --msg-hint-bg: #1e293b;
-      --msg-hint-text: #94a3b8;
-      --msg-hint-border: #475569;
-
-      --msg-warning-bg: #1e293b;
-      --msg-warning-text: #94a3b8;
-      --msg-warning-border: #475569;
-
-      --input-bg: #1e293b;
-      --input-border: #475569;
-      --input-text: #f8fafc;
-
-      --modal-overlay: rgba(0, 0, 0, 0.7);
-      --modal-bg: #1e293b;
-      --modal-border: #334155;
-
-      --pill-bg: #1e293b;
-      --pill-border: #475569;
-      --pill-text: #e2e8f0;
+    body.theme-dark {
+      --bg-app: #09090b;
+      --bg-header: #121215;
+      --bg-card: #18181b;
+      --bg-card-hover: #27272a;
+      --bg-input: #18181b;
+      --border-main: #27272a;
+      --border-btn: #3f3f46;
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --btn-primary-bg: #ffffff;
+      --btn-primary-fg: #09090b;
+      --btn-primary-hover: #e4e4e7;
+      --btn-secondary-bg: #18181b;
+      --btn-secondary-fg: #f4f4f5;
+      --btn-secondary-border: #3f3f46;
+      --btn-secondary-hover: #27272a;
+      --msg-user-bg: #18181b;
+      --msg-user-fg: #f4f4f5;
+      --msg-user-border: #27272a;
+      --msg-ai-bg: #121215;
+      --msg-ai-fg: #f4f4f5;
+      --msg-ai-border: #27272a;
+      --msg-hint-bg: #141417;
+      --msg-hint-border: #3f3f46;
+      --msg-hint-fg: #d4d4d8;
+      --focus-bg: #18181b;
+      --focus-fg: #f4f4f5;
+      --focus-border: #52525b;
+      --focus-active-bg: #ffffff;
+      --focus-active-fg: #000000;
+      --focus-active-border: #ffffff;
+      --modal-bg: #141417;
     }
 
     body {
@@ -140,7 +88,7 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      transition: background-color 0.15s ease, color 0.15s ease;
+      transition: background 0.15s ease, color 0.15s ease;
     }
 
     /* Drag & Drop Overlay */
@@ -150,16 +98,17 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: var(--modal-overlay);
-      border: 2px dashed var(--border-focus);
+      background: rgba(0, 0, 0, 0.85);
+      border: 2px dashed #ffffff;
+      border-radius: 8px;
       z-index: 9999;
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
       pointer-events: none;
-      backdrop-filter: blur(2px);
+      backdrop-filter: blur(4px);
     }
 
     #drop-overlay.active {
@@ -168,285 +117,415 @@
 
     #drop-overlay .drop-text {
       font-size: 15px;
-      font-weight: 600;
-      color: var(--text-main);
+      font-weight: 700;
+      color: #ffffff;
     }
 
     #drop-overlay .drop-sub {
       font-size: 12px;
+      color: #cccccc;
+    }
+
+    /* Sidebar Drawer (Monochrome, Minimal, Matching Ghost AI) */
+    #sidebar-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(2px);
+      z-index: 9500;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    #sidebar-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+
+    #sidebar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 320px;
+      max-width: 86%;
+      height: 100%;
+      background: var(--bg-app);
+      color: var(--text-main);
+      box-shadow: 6px 0 24px rgba(0, 0, 0, 0.18);
+      border-right: 1px solid var(--border-main);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      font-size: 12px;
+    }
+
+    #sidebar-overlay.active #sidebar {
+      transform: translateX(0);
+    }
+
+    .sidebar-header {
+      padding: 11px 14px;
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .btn-sidebar-close {
+      background: var(--btn-secondary-bg);
+      border: 1px solid var(--border-btn);
+      color: var(--text-main);
+      padding: 2px 7px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .btn-sidebar-close:hover {
+      background: var(--btn-secondary-hover);
+    }
+
+    .sidebar-actions {
+      padding: 10px 12px;
+      display: flex;
+      gap: 8px;
+      background: var(--bg-app);
+      border-bottom: 1px solid var(--border-main);
+    }
+
+    .btn-sidebar-action {
+      flex: 1.2;
+      padding: 7px 10px;
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-fg);
+      border: 1px solid var(--btn-primary-bg);
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: opacity 0.15s;
+    }
+    .btn-sidebar-action:hover { opacity: 0.85; }
+
+    .btn-sidebar-action.secondary {
+      flex: 1;
+      background: var(--btn-secondary-bg);
+      color: var(--btn-secondary-fg);
+      border: 1px solid var(--border-btn);
+    }
+    .btn-sidebar-action.secondary:hover {
+      background: var(--btn-secondary-hover);
+    }
+
+    .sidebar-field-group {
+      padding: 10px 12px 6px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sidebar-label {
+      font-size: 11px;
+      font-weight: 600;
       color: var(--text-muted);
+    }
+
+    .sidebar-select {
+      width: 100%;
+      padding: 6px 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-btn);
+      color: var(--text-main);
+      border-radius: 6px;
+      font-size: 11.5px;
+      outline: none;
+      cursor: pointer;
+    }
+    .sidebar-select:focus {
+      border-color: var(--text-main);
+    }
+
+    .sidebar-list-header {
+      padding: 8px 12px 4px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .chat-list-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 12px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .chat-card {
+      padding: 8px 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-main);
+      border-radius: 7px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+      min-height: 48px;
+    }
+    .chat-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--text-muted);
+    }
+    .chat-card.active {
+      background: var(--bg-card-hover);
+      border-color: var(--text-main);
+      border-left: 3px solid var(--text-main);
+    }
+
+    .chat-card-title {
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-card-meta {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .sidebar-footer {
+      padding: 8px 12px;
+      background: var(--bg-header);
+      border-top: 1px solid var(--border-main);
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     /* Header */
     #header {
       background: var(--bg-header);
-      border-bottom: 1px solid var(--border-subtle);
-      padding: 7px 12px;
+      border-bottom: 1px solid var(--border-main);
+      padding: 5px 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 5px;
       flex-shrink: 0;
+      width: 100%;
+      overflow: hidden;
     }
 
     .status-group {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
     }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      background: var(--badge-bg);
-      border: 1px solid var(--badge-border);
-      padding: 3px 6px;
+    .btn-sidebar-toggle {
+      padding: 4px 7px;
+      background: var(--btn-secondary-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border-btn);
       border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .btn-sidebar-toggle:hover {
+      background: var(--btn-secondary-hover);
     }
 
-    .model-dropdown {
-      background: transparent;
-      border: none;
+    #engine-select {
+      flex: 1;
+      min-width: 60px;
+      max-width: 140px;
+      padding: 3px 5px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-btn);
+      border-radius: 6px;
       font-size: 11px;
       font-weight: 600;
-      color: var(--badge-text);
-      cursor: pointer;
-      outline: none;
-      font-family: inherit;
-      padding: 0;
-    }
-
-    .model-dropdown option {
-      background: var(--bg-app);
       color: var(--text-main);
+      outline: none;
+      cursor: pointer;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
     #focus-indicator {
-      font-size: 10.5px;
-      padding: 3px 6px;
-      border-radius: 6px;
-      font-weight: 600;
-      background: var(--status-safe-bg);
-      color: var(--status-safe-text);
-      border: 1px solid var(--status-safe-border);
+      font-size: 9.5px;
+      padding: 2px 5px;
+      border-radius: 5px;
+      font-weight: 700;
+      background: var(--focus-bg);
+      color: var(--focus-fg);
+      border: 1px solid var(--focus-border);
+      flex-shrink: 0;
+      white-space: nowrap;
     }
 
     #focus-indicator.active {
-      background: var(--status-active-bg);
-      color: var(--status-active-text);
-      border-color: var(--status-active-border);
+      background: var(--focus-active-bg);
+      color: var(--focus-active-fg);
+      border-color: var(--focus-active-border);
     }
 
-    .header-controls {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    .btn-host-pill {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 5px;
+      border: 1px solid var(--border-btn);
+      background: var(--btn-secondary-bg);
+      color: var(--text-main);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .btn-host-pill:hover {
+      background: var(--btn-secondary-hover);
     }
 
     .opacity-control {
       display: flex;
       align-items: center;
       gap: 4px;
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 500;
+      flex-shrink: 0;
     }
 
     .opacity-control input[type="range"] {
-      width: 55px;
+      width: 40px;
       cursor: pointer;
-      accent-color: var(--btn-primary-bg);
+      accent-color: var(--text-main);
     }
 
     #opacity-val {
-      min-width: 26px;
+      min-width: 22px;
       text-align: right;
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--text-muted);
     }
 
-    .btn-ctrl {
-      padding: 3px 8px;
+    .btn-apikey {
+      padding: 3px 6px;
       background: var(--btn-secondary-bg);
-      border: 1px solid var(--btn-secondary-border);
-      color: var(--btn-secondary-text);
+      border: 1px solid var(--border-btn);
+      color: var(--text-main);
       border-radius: 6px;
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
-      font-family: inherit;
-    }
-    .btn-ctrl:hover {
-      background: var(--btn-secondary-hover);
-      color: var(--text-main);
-    }
-
-    /* API Key Modal */
-    #api-modal {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--modal-overlay);
-      backdrop-filter: blur(2px);
-      z-index: 10000;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      flex-shrink: 0;
     }
-    #api-modal.active { display: flex; }
-
-    .modal-card {
-      background: var(--modal-bg);
-      border: 1px solid var(--modal-border);
-      width: 100%;
-      max-width: 380px;
-      border-radius: 10px;
-      box-shadow: 0 16px 30px rgba(0,0,0,0.25);
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .modal-card h3 {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-main);
-    }
-
-    .modal-card p {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.45;
-    }
-
-    .modal-card input {
-      width: 100%;
-      padding: 8px 10px;
-      border: 1px solid var(--input-border);
-      border-radius: 6px;
-      font-size: 12px;
-      outline: none;
-      font-family: inherit;
-      background: var(--input-bg);
-      color: var(--input-text);
-    }
-    .modal-card input:focus {
-      border-color: var(--border-focus);
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-    }
-
-    .btn-modal-save {
-      padding: 6px 14px;
-      background: var(--btn-primary-bg);
-      color: var(--btn-primary-text);
-      border: 1px solid var(--btn-primary-border);
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 12px;
-      cursor: pointer;
-      font-family: inherit;
-    }
-    .btn-modal-save:hover {
-      background: var(--btn-primary-hover);
-    }
-
-    .btn-modal-cancel {
-      padding: 6px 12px;
-      background: var(--btn-secondary-bg);
-      color: var(--btn-secondary-text);
-      border: 1px solid var(--btn-secondary-border);
-      border-radius: 6px;
-      font-weight: 500;
-      font-size: 12px;
-      cursor: pointer;
-      font-family: inherit;
-    }
-    .btn-modal-cancel:hover {
+    .btn-apikey:hover {
       background: var(--btn-secondary-hover);
+    }
+
+    .btn-icon-header {
+      width: 26px;
+      height: 24px;
+      padding: 0;
+      font-size: 12px;
     }
 
     /* Document Bar */
     #doc-bar {
-      padding: 6px 12px;
-      background: var(--bg-bar);
-      border-bottom: 1px solid var(--border-subtle);
+      padding: 4px 8px;
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-main);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
       flex-shrink: 0;
     }
 
     .doc-status {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      overflow-x: auto;
-      white-space: nowrap;
+      gap: 5px;
+      overflow: hidden;
       flex: 1;
-      scrollbar-width: thin;
-      padding-bottom: 2px;
-      color: var(--text-muted);
+      min-width: 0;
     }
 
-    .doc-pill {
+    .doc-tag {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: var(--pill-bg);
-      color: var(--pill-text);
-      border: 1px solid var(--pill-border);
-      padding: 2px 7px;
-      border-radius: 5px;
-      font-weight: 500;
+      gap: 4px;
+      padding: 2px 6px;
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-btn);
+      border-radius: 4px;
       font-size: 11px;
-      flex-shrink: 0;
-    }
-
-    .doc-pill span {
+      font-weight: 600;
       max-width: 140px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .doc-pill button {
+    .btn-remove-doc {
       background: transparent;
       border: none;
-      color: var(--text-muted);
+      color: var(--text-main);
+      font-weight: 700;
       cursor: pointer;
       font-size: 11px;
-      font-weight: bold;
       padding: 0 2px;
-      line-height: 1;
-    }
-    .doc-pill button:hover {
-      color: var(--text-main);
     }
 
     .btn-load-doc {
-      padding: 4px 8px;
-      border: 1px dashed var(--btn-secondary-border);
+      padding: 3px 7px;
+      border: 1px dashed var(--border-btn);
       background: var(--btn-secondary-bg);
-      color: var(--btn-secondary-text);
+      color: var(--text-muted);
       font-size: 11px;
-      font-weight: 500;
-      border-radius: 6px;
+      font-weight: 600;
+      border-radius: 5px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 4px;
       white-space: nowrap;
       flex-shrink: 0;
-      font-family: inherit;
     }
     .btn-load-doc:hover {
       background: var(--btn-secondary-hover);
@@ -455,51 +534,60 @@
 
     /* Action Bar */
     #quick-bar {
-      padding: 7px 12px;
+      padding: 6px 8px;
       background: var(--bg-app);
-      border-bottom: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-main);
       display: flex;
-      gap: 6px;
+      gap: 5px;
+      align-items: center;
       flex-shrink: 0;
     }
 
     .quick-btn {
-      flex: 1.2;
+      flex: 1;
+      min-width: 0;
       padding: 6px 10px;
-      border: 1px solid var(--btn-primary-border);
+      border: 1px solid var(--btn-primary-bg);
       background: var(--btn-primary-bg);
-      color: var(--btn-primary-text);
+      color: var(--btn-primary-fg);
       font-size: 11.5px;
-      font-weight: 600;
+      font-weight: 700;
       border-radius: 6px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.1s;
-      font-family: inherit;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: all 0.1s;
     }
-    .quick-btn:hover {
-      background: var(--btn-primary-hover);
-    }
-    .quick-btn:active {
-      transform: scale(0.98);
-    }
+    .quick-btn:hover { background: var(--btn-primary-hover); }
+    .quick-btn:active { transform: scale(0.97); }
 
-    .btn-secondary {
-      padding: 6px 9px;
-      border: 1px solid var(--btn-secondary-border);
+    .btn-icon-only {
+      width: 32px;
+      height: 30px;
+      padding: 0;
+      border: 1px solid var(--border-btn);
       background: var(--btn-secondary-bg);
-      color: var(--btn-secondary-text);
-      font-size: 11px;
-      font-weight: 500;
+      color: var(--btn-secondary-fg);
+      font-size: 13px;
       border-radius: 6px;
       cursor: pointer;
-      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.1s ease;
     }
-    .btn-secondary:hover {
+    .btn-icon-only:hover {
       background: var(--btn-secondary-hover);
-      color: var(--text-main);
+    }
+    .btn-icon-only.active {
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-fg);
+      border-color: var(--btn-primary-bg);
     }
 
     /* Chat Messages */
@@ -514,10 +602,10 @@
     }
 
     .msg {
-      padding: 8px 11px;
-      border-radius: 8px;
+      padding: 9px 12px;
+      border-radius: 9px;
       line-height: 1.5;
-      max-width: 92%;
+      max-width: 94%;
       word-break: break-word;
       white-space: pre-wrap;
       font-size: 12.5px;
@@ -525,7 +613,7 @@
 
     .msg.user {
       background: var(--msg-user-bg);
-      color: var(--msg-user-text);
+      color: var(--msg-user-fg);
       align-self: flex-end;
       border-bottom-right-radius: 2px;
       font-weight: 500;
@@ -534,34 +622,142 @@
 
     .msg.ai {
       background: var(--msg-ai-bg);
-      color: var(--msg-ai-text);
+      color: var(--msg-ai-fg);
       align-self: flex-start;
       border-bottom-left-radius: 2px;
       border: 1px solid var(--msg-ai-border);
+      white-space: normal;
+    }
+
+    .msg.ai h1, .msg.ai h2, .msg.ai h3, .msg.ai h4 {
+      font-size: 13px;
+      font-weight: 700;
+      margin: 8px 0 4px 0;
+      color: var(--text-main);
+    }
+    .msg.ai h1:first-child, .msg.ai h2:first-child, .msg.ai h3:first-child, .msg.ai h4:first-child {
+      margin-top: 0;
+    }
+    .msg.ai p {
+      margin-bottom: 6px;
+    }
+    .msg.ai p:last-child {
+      margin-bottom: 0;
+    }
+    .msg.ai ul, .msg.ai ol {
+      margin: 4px 0 6px 18px;
+    }
+    .msg.ai li {
+      margin-bottom: 3px;
+    }
+    .msg.ai hr {
+      border: 0;
+      border-top: 1px solid var(--border-main);
+      margin: 8px 0;
+    }
+    .msg.ai blockquote {
+      border-left: 3px solid var(--text-muted);
+      padding-left: 8px;
+      margin: 6px 0;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    .msg.ai code {
+      background: var(--bg-card-hover);
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+      font-size: 11.5px;
+      border: 1px solid var(--border-btn);
+    }
+    .msg.ai pre {
+      background: var(--bg-card-hover);
+      padding: 8px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 6px 0;
+      border: 1px solid var(--border-main);
+    }
+    .msg.ai pre code {
+      background: transparent;
+      padding: 0;
+      border: none;
+      font-size: 11.5px;
+    }
+    .msg.ai strong {
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Slash command suggestions dropdown */
+    #slash-popup {
+      position: absolute;
+      bottom: 50px;
+      left: 10px;
+      width: calc(100% - 20px);
+      max-height: 180px;
+      overflow-y: auto;
+      background: var(--modal-bg);
+      border: 1px solid var(--border-main);
+      border-radius: 8px;
+      box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.25);
+      display: none;
+      flex-direction: column;
+      z-index: 9000;
+    }
+    #slash-popup.active {
+      display: flex;
+    }
+    .slash-item {
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 11.5px;
+      border-bottom: 1px solid var(--border-main);
+      transition: background 0.1s ease;
+    }
+    .slash-item:last-child { border-bottom: none; }
+    .slash-item:hover, .slash-item.selected {
+      background: var(--bg-card-hover);
+    }
+    .slash-cmd {
+      font-weight: 700;
+      font-family: Consolas, monospace;
+      color: var(--text-main);
+      flex-shrink: 0;
+    }
+    .slash-desc {
+      color: var(--text-muted);
+      font-size: 10.5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .msg.hint {
       background: var(--msg-hint-bg);
       border: 1px dashed var(--msg-hint-border);
-      color: var(--msg-hint-text);
+      color: var(--msg-hint-fg);
       font-size: 11.5px;
       align-self: center;
       text-align: center;
-      line-height: 1.55;
+      line-height: 1.6;
     }
 
     .msg.warning {
-      background: var(--msg-warning-bg);
-      border: 1px solid var(--msg-warning-border);
-      color: var(--msg-warning-text);
-      font-size: 11.5px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-btn);
+      color: var(--text-main);
+      font-size: 12px;
     }
 
     .loading-bubble {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 11.5px;
+      font-size: 12px;
       color: var(--text-muted);
     }
 
@@ -569,7 +765,7 @@
       display: inline-block;
       width: 5px;
       height: 5px;
-      background: var(--text-muted);
+      background: var(--text-main);
       border-radius: 50%;
       animation: blink 1.2s infinite;
     }
@@ -579,9 +775,9 @@
 
     /* Footer Input */
     #footer {
-      padding: 8px 12px;
+      padding: 7px 10px;
       background: var(--bg-header);
-      border-top: 1px solid var(--border-subtle);
+      border-top: 1px solid var(--border-main);
       display: flex;
       gap: 6px;
       align-items: flex-end;
@@ -590,136 +786,304 @@
 
     #footer textarea {
       flex: 1;
-      padding: 7px 10px;
-      border: 1px solid var(--input-border);
+      padding: 7px 9px;
+      border: 1px solid var(--border-btn);
       border-radius: 6px;
       font-family: inherit;
       font-size: 12px;
       resize: none;
-      min-height: 33px;
-      max-height: 85px;
+      min-height: 32px;
+      max-height: 90px;
       outline: none;
       line-height: 1.35;
-      background: var(--input-bg);
-      color: var(--input-text);
+      background: var(--bg-input);
+      color: var(--text-main);
     }
-
     #footer textarea:focus {
-      border-color: var(--border-focus);
+      border-color: var(--text-main);
     }
 
     #send-btn {
-      padding: 0 14px;
-      height: 33px;
-      border: 1px solid var(--btn-primary-border);
+      width: 32px;
+      height: 32px;
+      border: none;
       background: var(--btn-primary-bg);
-      color: var(--btn-primary-text);
+      color: var(--btn-primary-fg);
       border-radius: 6px;
       cursor: pointer;
-      font-size: 11.5px;
-      font-weight: 600;
+      font-size: 14px;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      font-family: inherit;
-      transition: background 0.1s;
-    }
-    #send-btn:hover {
-      background: var(--btn-primary-hover);
     }
     #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Modals */
+    #api-modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #api-modal.active { display: flex; }
+
+    .modal-card {
+      background: var(--modal-bg);
+      color: var(--text-main);
+      width: 100%;
+      max-width: 380px;
+      border-radius: 12px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.4);
+      border: 1px solid var(--border-main);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modal-card p {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .modal-card input[type="password"],
+    .modal-card input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-btn);
+      background: var(--bg-input);
+      color: var(--text-main);
+      border-radius: 6px;
+      font-size: 12px;
+      outline: none;
+      font-family: inherit;
+    }
+    .modal-card input:focus {
+      border-color: var(--text-main);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .btn-modal-save {
+      padding: 7px 14px;
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-fg);
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 11.5px;
+      cursor: pointer;
+    }
+    .btn-modal-save:hover { opacity: 0.85; }
+
+    .btn-modal-cancel {
+      padding: 7px 12px;
+      background: var(--btn-secondary-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border-btn);
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 11.5px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <!-- API Key Modal -->
+  <!-- Sidebar Drawer (Projects & Chats) -->
+  <div id="sidebar-overlay">
+    <div id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">Proyectos y Chats</div>
+        <button id="btn-close-sidebar" class="btn-sidebar-close" title="Cerrar">x</button>
+      </div>
+
+      <div class="sidebar-actions">
+        <button id="btn-sidebar-new-chat" class="btn-sidebar-action">+ Nuevo Chat</button>
+        <button id="btn-sidebar-open-folder" class="btn-sidebar-action secondary">Abrir Carpeta</button>
+      </div>
+
+      <div class="sidebar-field-group">
+        <label class="sidebar-label">Motor / Modelo:</label>
+        <select id="sidebar-engine-select" class="sidebar-select">
+          <optgroup label="Antigravity">
+            <option value="gemini-3.8-flash-high" selected>Gemini 3.8 Flash HIGH</option>
+            <option value="claude-sonnet-4.6">Claude Sonnet 4.6 (Thinking)</option>
+            <option value="claude-opus-4.6">Claude Opus 4.6 (Thinking)</option>
+            <option value="gpt-oss-120b">GPT-OSS 120B (Medium)</option>
+            <option value="antigravity">Antigravity Solver (Python Exacto)</option>
+          </optgroup>
+          <optgroup label="Directo (API Key)">
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="sidebar-field-group">
+        <label class="sidebar-label">Proyecto / Workspace:</label>
+        <select id="sidebar-workspace-filter" class="sidebar-select">
+          <option value="all">Todos los proyectos</option>
+        </select>
+      </div>
+
+      <div class="sidebar-list-header">
+        <span>Conversaciones Recientes:</span>
+        <button id="btn-refresh-projects" class="btn-sidebar-close" style="padding:1px 6px; font-size:10px;" title="Recargar">Recargar</button>
+      </div>
+
+      <div id="chat-list-container" class="chat-list-container">
+        <div style="color:#64748b; padding:12px; text-align:center;">Cargando conversaciones...</div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="sidebar-host-btn" class="btn-sidebar-close" style="font-size:10.5px; padding:2px 7px; cursor:pointer;" title="Clic para configurar Modo Local / Remoto">Modo: Local</button>
+        <span id="sidebar-total-chats">0 chats</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Key & Host Modal -->
   <div id="api-modal">
     <div class="modal-card">
-      <h3>Configurar Gemini API Key</h3>
+      <h3>Configurar Motor y Claves</h3>
       <p>
-        Para usar Ghost AI necesitas ingresar tu propia clave de Google Gemini. Es gratuita y se genera en pocos segundos con tu cuenta de Google.
+        Para usar la app necesitas tu propia clave de Google Gemini (es <strong>100% gratuita</strong> y se crea en 30 segundos con tu cuenta de Google).
       </p>
       <input type="password" id="modal-apikey-input" placeholder="Pega tu API Key de Gemini aqui..." />
-      <div style="font-size:11px; color:var(--text-muted);">
-        Obtener clave gratuita en: <strong>aistudio.google.com/apikey</strong>
+      <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">
+        -> Conseguila gratis en: <strong>aistudio.google.com/apikey</strong>
       </div>
+
+      <hr style="border:0; border-top:1px solid var(--border-main); margin:8px 0;" />
+      <h3 style="font-size:13px; color:var(--text-main); margin-bottom:4px;">Modo de Ejecución (Local vs Remoto)</h3>
+      <p style="font-size:11px; color:#64748b; margin-bottom:8px;">
+        Elige si ejecutar los calculos en esta maquina o derivarlos a tu PC de escritorio remota:
+      </p>
+      <div style="display:flex; flex-direction:column; gap:6px; font-size:11.5px; margin-bottom:8px;">
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="radio" name="ghost-host-mode" value="local" id="radio-host-local" checked>
+          <span><strong>Modo Local:</strong> Ejecutar en esta PC (por defecto)</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="radio" name="ghost-host-mode" value="remote" id="radio-host-remote">
+          <span><strong>Modo Remoto:</strong> Conectar a PC de Escritorio / Tunel</span>
+        </label>
+      </div>
+      <input type="text" id="modal-remote-host-input" placeholder="Ej: http://192.168.1.55:7777 o URL de tunel" style="display:none; font-size:11.5px; padding:6px 8px; border:1px solid #cbd5e1; border-radius:6px; width:100%; box-sizing:border-box; margin-bottom:6px;" />
+
       <div class="modal-actions">
         <button class="btn-modal-cancel" id="btn-modal-cancel">Cancelar</button>
-        <button class="btn-modal-save" id="btn-modal-save">Guardar</button>
+        <button class="btn-modal-save" id="btn-modal-save">Guardar Ajustes</button>
       </div>
     </div>
   </div>
 
   <!-- Drag and Drop Overlay -->
   <div id="drop-overlay">
-    <div class="drop-text">Soltar archivo para cargar</div>
-    <div class="drop-sub">Se agregara como referencia para tus consultas</div>
+    <div class="drop-text">Solta tu PDF o apunte aca</div>
+    <div class="drop-sub">Se cargara automaticamente para tu consulta</div>
   </div>
 
   <!-- Header -->
   <div id="header">
     <div class="status-group">
-      <div class="badge">
-        <select id="model-select" class="model-dropdown" title="Seleccionar modelo de Gemini">
+      <button class="btn-sidebar-toggle" id="btn-open-sidebar" title="Abrir gestor de proyectos y chats">Chats</button>
+      <select id="engine-select" title="Elige el motor de inteligencia">
+        <optgroup label="Antigravity">
+          <option value="gemini-3.8-flash-high" selected>Gemini 3.8 Flash HIGH</option>
+          <option value="claude-sonnet-4.6">Claude Sonnet 4.6 (Thinking)</option>
+          <option value="claude-opus-4.6">Claude Opus 4.6 (Thinking)</option>
+          <option value="gpt-oss-120b">GPT-OSS 120B (Medium)</option>
+          <option value="antigravity">Antigravity Solver (Python Exacto)</option>
+        </optgroup>
+        <optgroup label="Directo (API Key)">
           <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
-          <option value="gemini-3.8-flash">Gemini 3.8 Flash</option>
-        </select>
-      </div>
-      <span id="focus-indicator" title="Tocar esta ventana no le quita el foco a otras aplicaciones">Sin foco</span>
+        </optgroup>
+      </select>
+      <span id="focus-indicator" title="Tocar esta ventana NO le quita el foco a tu navegador">NO-FOCO</span>
     </div>
-    <div class="header-controls">
-      <button class="btn-ctrl" id="btn-theme-toggle" title="Alternar modo claro / oscuro">Oscuro</button>
-      <div class="opacity-control">
-        <span>Opacidad:</span>
-        <input type="range" id="opacity-slider" min="15" max="100" value="95" />
-        <span id="opacity-val">95%</span>
-      </div>
-      <button class="btn-ctrl" id="btn-open-apikey" title="Configurar tu clave de Google Gemini">API Key</button>
+    <div class="opacity-control">
+      <button class="btn-host-pill" id="header-host-badge" title="Modo actual. Clic para cambiar entre Modo Local y Remoto">Local</button>
+      <input type="range" id="opacity-slider" min="15" max="100" value="95" title="Opacidad" />
+      <span id="opacity-val">95%</span>
+      <button class="btn-apikey btn-icon-header" id="btn-theme-toggle" title="Modo Claro / Oscuro Blanco y Negro">☾</button>
+      <button class="btn-apikey btn-icon-header" id="btn-open-apikey" title="Configurar API Key y Modo Local/Remoto">⚿</button>
     </div>
   </div>
 
-  <!-- Document Bar -->
+  <!-- Document Bar & Active Chat Subtitle -->
   <div id="doc-bar">
     <div class="doc-status" id="doc-status-container">
-      <span>Arrastra archivos o seleccionalos -></span>
+      <span id="active-chat-indicator" style="font-size:11px; font-weight:600; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;" title="Conversacion activa">Chat: General</span>
+      <span style="color:var(--border-btn); font-size:10px;">|</span>
+      <span style="color:var(--text-muted); font-size:11px;">Arrastra un documento aqui -></span>
     </div>
-    <button class="btn-load-doc" id="btn-load-doc" title="Cargar PDF o documentos de referencia">
-      Cargar archivo
+    <button class="btn-load-doc" id="btn-load-doc" title="Carga el PDF o resumen del examen">
+      Cargar PDF / Resumen
     </button>
   </div>
 
   <!-- Action Bar -->
   <div id="quick-bar">
-    <button class="quick-btn" id="btn-select" title="Selecciona texto en cualquier aplicacion y presiona este boton">
-      Preguntar seleccion
+    <button class="quick-btn" id="btn-select" title="Selecciona la pregunta en tu navegador y toca este boton (sin tocar el teclado)">
+      Preguntar
     </button>
-    <button class="btn-secondary" id="btn-clip" title="Consulta lo que tengas copiado en el portapapeles">
-      Portapapeles
+    <button class="btn-icon-only" id="btn-clip" title="Preguntar lo que tengas copiado en el portapapeles">
+      ⎘
     </button>
-    <button class="btn-secondary" id="btn-type-toggle" title="Activa el teclado para tipear manualmente">
-      Tipear
+    <button class="btn-icon-only" id="btn-type-toggle" title="Activar/desactivar teclado para tipear (Ctrl+Shift+Space)">
+      ✎
     </button>
-    <button class="btn-secondary" id="btn-clear" title="Limpiar conversacion">
-      Limpiar
+    <button class="btn-icon-only" id="btn-clear" title="Limpiar conversación">
+      🧹
     </button>
   </div>
 
   <!-- Chat -->
   <div id="chat">
     <div class="msg hint">
-      <strong>Ghost AI</strong><br/>
-      Arrastra archivos para usarlos de contexto en tus consultas.<br/>
-      Resalta texto en tu pantalla y toca "Preguntar seleccion".<br/>
-      Respuestas en texto plano y ordenado.
+      <strong>Modo Asistente Antigravity Activo</strong><br/>
+      * Toca <strong>Chats</strong> para ver tus proyectos y conversaciones.<br/>
+      * Arrastra documentos directo a esta ventana para cruzarlos.<br/>
+      * Resalta la consigna en tu navegador y toca <strong>Preguntar lo Seleccionado</strong>.<br/>
+      El motor Dual Simplex / PERT resolvera con rigor matematico y exportara a Word/PDF.
     </div>
   </div>
 
+  <!-- Slash Commands Autocomplete Popup -->
+  <div id="slash-popup"></div>
+
   <!-- Footer -->
   <div id="footer">
-    <textarea id="prompt-input" rows="1" placeholder="Escribe tu consulta..."></textarea>
-    <button id="send-btn" title="Enviar consulta">Enviar</button>
+    <textarea id="prompt-input" rows="1" placeholder="Escribe aqui... (Usa Tipear o Ctrl+Shift+Space)"></textarea>
+    <button id="send-btn" title="Enviar">-></button>
   </div>
 
+  <!-- Scripts -->
+  <script src="marked.min.js"></script>
   <script>
     const chat = document.getElementById("chat");
     const input = document.getElementById("prompt-input");
@@ -739,53 +1103,110 @@
     const modalApiKeyInput = document.getElementById("modal-apikey-input");
     const btnModalSave = document.getElementById("btn-modal-save");
     const btnModalCancel = document.getElementById("btn-modal-cancel");
-    const btnThemeToggle = document.getElementById("btn-theme-toggle");
-    const modelSelect = document.getElementById("model-select");
 
+    // Local storage keys
     const STORAGE_KEY = "user_gemini_api_key";
-    const MODEL_STORAGE_KEY = "user_gemini_model";
-    const THEME_STORAGE_KEY = "ghost_theme";
+    const radioHostLocal = document.getElementById("radio-host-local");
+    const radioHostRemote = document.getElementById("radio-host-remote");
+    const modalRemoteHostInput = document.getElementById("modal-remote-host-input");
 
-    // --- THEME MANAGEMENT ---
-    function applyTheme(theme) {
-      const isDark = theme === "dark";
-      document.body.classList.toggle("dark", isDark);
-      btnThemeToggle.textContent = isDark ? "Claro" : "Oscuro";
-      localStorage.setItem(THEME_STORAGE_KEY, theme);
-      if (window.ghostAPI && typeof window.ghostAPI.setTheme === "function") {
-        window.ghostAPI.setTheme(theme);
-      }
-    }
+    // Sidebar Elements
+    const sidebarOverlay = document.getElementById("sidebar-overlay");
+    const btnOpenSidebar = document.getElementById("btn-open-sidebar");
+    const btnCloseSidebar = document.getElementById("btn-close-sidebar");
+    const btnSidebarNewChat = document.getElementById("btn-sidebar-new-chat");
+    const btnSidebarOpenFolder = document.getElementById("btn-sidebar-open-folder");
+    const btnRefreshProjects = document.getElementById("btn-refresh-projects");
+    const chatListContainer = document.getElementById("chat-list-container");
+    const sidebarWorkspaceFilter = document.getElementById("sidebar-workspace-filter");
+    const sidebarEngineSelect = document.getElementById("sidebar-engine-select");
+    const engineSelect = document.getElementById("engine-select");
+    const activeChatIndicator = document.getElementById("active-chat-indicator");
+    const sidebarHostBtn = document.getElementById("sidebar-host-btn");
+    const headerHostBadge = document.getElementById("header-host-badge");
+    const sidebarTotalChats = document.getElementById("sidebar-total-chats");
 
-    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || "light";
-    applyTheme(savedTheme);
+    // State
+    let currentConversationId = "";
+    let currentWorkspace = "c:/Users/ariel/testeos";
+    let currentChatTitle = "General";
+    let projectsData = [];
 
-    btnThemeToggle.addEventListener("click", () => {
-      const current = document.body.classList.contains("dark") ? "dark" : "light";
-      const next = current === "dark" ? "light" : "dark";
-      applyTheme(next);
-    });
-
-    // --- MODEL PREFERENCE ---
-    if (localStorage.getItem(MODEL_STORAGE_KEY) && modelSelect) {
-      modelSelect.value = localStorage.getItem(MODEL_STORAGE_KEY);
-    }
-    if (modelSelect) {
-      modelSelect.addEventListener("change", () => {
-        localStorage.setItem(MODEL_STORAGE_KEY, modelSelect.value);
-      });
-    }
-
-    // --- API KEY MANAGEMENT ---
     function getSavedApiKey() {
       return localStorage.getItem(STORAGE_KEY) || "";
     }
 
-    btnOpenApiKey.addEventListener("click", () => {
+    function getSavedHostMode() {
+      return localStorage.getItem("ghost_host_mode") || "local";
+    }
+
+    function getSavedRemoteHost() {
+      return localStorage.getItem("ghost_remote_host") || "http://192.168.1.55:7777";
+    }
+
+    function getEffectiveHostUrl() {
+      if (getSavedHostMode() === "remote") {
+        let host = (getSavedRemoteHost() || "").trim();
+        if (host.endsWith("/")) host = host.slice(0, -1);
+        return host || "http://192.168.1.55:7777";
+      }
+      return "http://localhost:7777";
+    }
+
+    function syncHostUI() {
+      const mode = getSavedHostMode();
+      const remoteHost = getSavedRemoteHost();
+      if (mode === "remote") {
+        if (radioHostRemote) radioHostRemote.checked = true;
+        if (modalRemoteHostInput) modalRemoteHostInput.style.display = "block";
+        if (sidebarHostBtn) {
+          sidebarHostBtn.textContent = "Modo: Remoto";
+          sidebarHostBtn.title = `Modo Remoto activo (${remoteHost}). Clic para cambiar a Local.`;
+        }
+        if (headerHostBadge) {
+          headerHostBadge.textContent = "Remoto";
+          headerHostBadge.title = `Modo Remoto activo (${remoteHost}). Clic para cambiar a Local.`;
+        }
+      } else {
+        if (radioHostLocal) radioHostLocal.checked = true;
+        if (modalRemoteHostInput) modalRemoteHostInput.style.display = "none";
+        if (sidebarHostBtn) {
+          sidebarHostBtn.textContent = "Modo: Local";
+          sidebarHostBtn.title = "Modo Local activo (esta PC). Clic para cambiar a Remoto.";
+        }
+        if (headerHostBadge) {
+          headerHostBadge.textContent = "Local";
+          headerHostBadge.title = "Modo Local activo (esta PC). Clic para cambiar a Remoto.";
+        }
+      }
+      if (modalRemoteHostInput) modalRemoteHostInput.value = remoteHost;
+    }
+
+    function openConfigModal() {
       modalApiKeyInput.value = getSavedApiKey();
+      syncHostUI();
       apiModal.classList.add("active");
       modalApiKeyInput.focus();
-    });
+    }
+
+    if (btnOpenApiKey) btnOpenApiKey.addEventListener("click", openConfigModal);
+    if (headerHostBadge) headerHostBadge.addEventListener("click", openConfigModal);
+    if (sidebarHostBtn) sidebarHostBtn.addEventListener("click", openConfigModal);
+
+    if (radioHostLocal) {
+      radioHostLocal.addEventListener("change", () => {
+        if (modalRemoteHostInput) modalRemoteHostInput.style.display = "none";
+      });
+    }
+
+    if (radioHostRemote) {
+      radioHostRemote.addEventListener("change", () => {
+        if (modalRemoteHostInput) {
+          modalRemoteHostInput.style.display = "block";
+          modalRemoteHostInput.focus();
+        }
+      });
+    }
 
     btnModalCancel.addEventListener("click", () => {
       apiModal.classList.remove("active");
@@ -794,13 +1215,294 @@
     btnModalSave.addEventListener("click", () => {
       const val = modalApiKeyInput.value.trim();
       if (!val) {
-        alert("Por favor ingresa una API Key valida de Google Gemini.");
+        alert("Por favor ingresa una API Key valida de Gemini.");
         return;
       }
       localStorage.setItem(STORAGE_KEY, val);
+
+      const hostMode = radioHostRemote && radioHostRemote.checked ? "remote" : "local";
+      const remoteHost = modalRemoteHostInput ? (modalRemoteHostInput.value.trim() || "http://192.168.1.55:7777") : "http://192.168.1.55:7777";
+      localStorage.setItem("ghost_host_mode", hostMode);
+      localStorage.setItem("ghost_remote_host", remoteHost);
+
       apiModal.classList.remove("active");
-      addMsg("ai", "API Key guardada con exito.");
+      syncHostUI();
+      addMsg("ai", `Ajustes guardados. Modo: <strong>${hostMode === 'remote' ? 'Remoto (' + remoteHost + ')' : 'Local (Esta PC)'}</strong>.`);
+      loadProjects();
     });
+
+    // Sync Model Selectors & Persist
+    let savedEngine = localStorage.getItem("ghost_selected_engine") || "gemini-3.8-flash-high";
+    if (savedEngine === "gemini") savedEngine = "gemini-3.5-flash";
+    if (sidebarEngineSelect) sidebarEngineSelect.value = savedEngine;
+    if (engineSelect) engineSelect.value = savedEngine;
+
+    function handleEngineChange(newEngine) {
+      if (sidebarEngineSelect) sidebarEngineSelect.value = newEngine;
+      if (engineSelect) engineSelect.value = newEngine;
+      localStorage.setItem("ghost_selected_engine", newEngine);
+    }
+
+    if (sidebarEngineSelect) {
+      sidebarEngineSelect.addEventListener("change", (e) => handleEngineChange(e.target.value));
+    }
+    if (engineSelect) {
+      engineSelect.addEventListener("change", (e) => handleEngineChange(e.target.value));
+    }
+
+    // Monochrome Theme Management (Light / Dark B&W)
+    const btnThemeToggle = document.getElementById("btn-theme-toggle");
+    const STORAGE_THEME = "ghost_theme";
+
+    function applyTheme(theme) {
+      if (theme === "dark") {
+        document.body.classList.remove("theme-light");
+        document.body.classList.add("theme-dark");
+        if (btnThemeToggle) {
+          btnThemeToggle.textContent = "☀";
+          btnThemeToggle.title = "Cambiar a modo claro B/N";
+        }
+      } else {
+        document.body.classList.remove("theme-dark");
+        document.body.classList.add("theme-light");
+        if (btnThemeToggle) {
+          btnThemeToggle.textContent = "☾";
+          btnThemeToggle.title = "Cambiar a modo oscuro B/N";
+        }
+      }
+      localStorage.setItem(STORAGE_THEME, theme);
+    }
+
+    const savedTheme = localStorage.getItem(STORAGE_THEME) || "light";
+    applyTheme(savedTheme);
+
+    if (btnThemeToggle) {
+      btnThemeToggle.addEventListener("click", () => {
+        const isDark = document.body.classList.contains("theme-dark");
+        applyTheme(isDark ? "light" : "dark");
+      });
+    }
+
+    // --- SIDEBAR DRAWER CONTROLS ---
+    function openSidebar() {
+      sidebarOverlay.classList.add("active");
+      loadProjects();
+    }
+
+    function closeSidebar() {
+      sidebarOverlay.classList.remove("active");
+    }
+
+    if (btnOpenSidebar) btnOpenSidebar.addEventListener("click", openSidebar);
+    if (btnCloseSidebar) btnCloseSidebar.addEventListener("click", closeSidebar);
+    if (sidebarOverlay) {
+      sidebarOverlay.addEventListener("click", (e) => {
+        if (e.target === sidebarOverlay) closeSidebar();
+      });
+    }
+
+    // Fetch and render projects & chats
+    async function loadProjects() {
+      if (!chatListContainer) return;
+      chatListContainer.innerHTML = `<div style="color:#64748b; padding:12px; text-align:center;">Cargando...</div>`;
+
+      try {
+        let projects = [];
+        const isRemote = getSavedHostMode() === "remote";
+        if (isRemote) {
+          const res = await fetch(`${getEffectiveHostUrl()}/api/projects`);
+          projects = await res.json();
+        } else {
+          projects = await window.ghostAPI.getProjects();
+        }
+
+        if (!Array.isArray(projects)) {
+          chatListContainer.innerHTML = `<div style="color:#dc2626; padding:10px;">Error al leer proyectos.</div>`;
+          return;
+        }
+
+        projectsData = projects;
+        let totalChats = 0;
+        projects.forEach(p => totalChats += (p.chats ? p.chats.length : 0));
+        if (sidebarTotalChats) sidebarTotalChats.textContent = `${totalChats} chats`;
+
+        // Update Workspace Filter Dropdown
+        const currentFilter = sidebarWorkspaceFilter ? sidebarWorkspaceFilter.value : "all";
+        if (sidebarWorkspaceFilter) {
+          sidebarWorkspaceFilter.innerHTML = `<option value="all">Todos los proyectos (${projects.length})</option>`;
+          projects.forEach(p => {
+            const count = p.chats ? p.chats.length : 0;
+            const opt = document.createElement("option");
+            opt.value = p.path;
+            opt.textContent = `${p.name} (${count})`;
+            sidebarWorkspaceFilter.appendChild(opt);
+          });
+          if (currentFilter && Array.from(sidebarWorkspaceFilter.options).some(o => o.value === currentFilter)) {
+            sidebarWorkspaceFilter.value = currentFilter;
+          }
+        }
+
+        renderChats();
+
+      } catch (err) {
+        chatListContainer.innerHTML = `<div style="color:#dc2626; padding:10px;">Error: ${err.message}</div>`;
+      }
+    }
+
+    function renderChats() {
+      if (!chatListContainer) return;
+      const filter = sidebarWorkspaceFilter ? sidebarWorkspaceFilter.value : "all";
+      let displayChats = [];
+
+      if (filter === "all") {
+        projectsData.forEach(p => {
+          if (p.chats) {
+            p.chats.forEach(c => {
+              displayChats.push({ ...c, projectName: p.name, workspacePath: p.path });
+            });
+          }
+        });
+        displayChats.sort((a, b) => (b.updated || "").localeCompare(a.updated || ""));
+      } else {
+        const found = projectsData.find(p => p.path === filter);
+        if (found && found.chats) {
+          displayChats = found.chats.map(c => ({ ...c, projectName: found.name, workspacePath: found.path }));
+        }
+      }
+
+      if (displayChats.length === 0) {
+        chatListContainer.innerHTML = `<div style="color:#64748b; padding:16px; text-align:center;">No hay conversaciones en esta seccion.</div>`;
+        return;
+      }
+
+      chatListContainer.innerHTML = "";
+      displayChats.slice(0, 40).forEach(c => {
+        const card = document.createElement("div");
+        card.className = `chat-card ${c.id === currentConversationId ? 'active' : ''}`;
+        card.innerHTML = `
+          <div class="chat-card-title" title="${c.title}">${c.title}</div>
+          <div class="chat-card-meta">
+            <span>${c.projectName || ''}</span>
+            <span>${c.updated ? c.updated.split(' ')[0] : ''}</span>
+          </div>
+        `;
+        card.addEventListener("click", () => {
+          selectConversation(c.id, c.title, c.workspacePath);
+        });
+        chatListContainer.appendChild(card);
+      });
+    }
+
+    if (sidebarWorkspaceFilter) {
+      sidebarWorkspaceFilter.addEventListener("change", renderChats);
+    }
+
+    if (btnRefreshProjects) btnRefreshProjects.addEventListener("click", loadProjects);
+
+    // Select existing conversation
+    async function selectConversation(cid, title, wsPath) {
+      currentConversationId = cid;
+      currentChatTitle = title;
+      currentWorkspace = wsPath || currentWorkspace;
+
+      if (activeChatIndicator) {
+        activeChatIndicator.textContent = `Chat: ${title}`;
+        activeChatIndicator.title = `${wsPath} / ${title}`;
+      }
+
+      closeSidebar();
+
+      chat.innerHTML = `<div class="msg hint">Cargando historial de conversacion...</div>`;
+
+      try {
+        let historyData = null;
+        const isRemote = getSavedHostMode() === "remote";
+        if (isRemote) {
+          const res = await fetch(`${getEffectiveHostUrl()}/api/conversations/${cid}`);
+          historyData = await res.json();
+        } else {
+          historyData = await window.ghostAPI.getConversationHistory(cid);
+        }
+
+        chat.innerHTML = "";
+        conversationHistory = [];
+
+        if (historyData && Array.isArray(historyData.messages) && historyData.messages.length > 0) {
+          historyData.messages.forEach(m => {
+            addMsg(m.role === "user" ? "user" : "ai", m.content);
+            conversationHistory.push({ role: m.role, content: m.content });
+          });
+        } else {
+          addMsg("hint", `Conversacion iniciada: <strong>${title}</strong>\nWorkspace: ${wsPath}`);
+        }
+      } catch (e) {
+        chat.innerHTML = `<div class="msg warning">Error al cargar historial: ${e.message}</div>`;
+      }
+    }
+
+    // Create New Conversation
+    async function createNewChat() {
+      const activeFilter = (sidebarWorkspaceFilter && sidebarWorkspaceFilter.value !== "all") ? sidebarWorkspaceFilter.value : "";
+      const defaultWs = activeFilter || currentWorkspace || (projectsData[0] ? projectsData[0].path : "c:/Users/ariel/testeos");
+      const title = prompt("Titulo para la nueva conversacion:", "Nuevo Chat");
+      if (title === null) return;
+
+      try {
+        let resData = null;
+        const isRemote = getSavedHostMode() === "remote";
+        if (isRemote) {
+          const res = await fetch(`${getEffectiveHostUrl()}/api/conversations/new`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ workspace: defaultWs, title: title.trim() || "Nuevo Chat" })
+          });
+          resData = await res.json();
+        } else {
+          resData = await window.ghostAPI.createConversation({ workspace: defaultWs, title: title.trim() || "Nuevo Chat" });
+        }
+
+        if (resData && resData.id) {
+          currentConversationId = resData.id;
+          currentChatTitle = resData.title;
+          currentWorkspace = resData.workspace;
+
+          if (activeChatIndicator) {
+            activeChatIndicator.textContent = `Chat: ${resData.title}`;
+          }
+
+          chat.innerHTML = "";
+          conversationHistory = [];
+          addMsg("hint", `Nueva conversacion iniciada:\n<strong>${resData.title}</strong>\nWorkspace: ${resData.workspace}`);
+          closeSidebar();
+          loadProjects();
+        } else {
+          alert("Error creando conversacion: " + (resData ? resData.error : "Desconocido"));
+        }
+      } catch (err) {
+        alert("Error al contactar con el sistema: " + err.message);
+      }
+    }
+
+    if (btnSidebarNewChat) btnSidebarNewChat.addEventListener("click", createNewChat);
+
+    // Open Folder / Project
+    if (btnSidebarOpenFolder) {
+      btnSidebarOpenFolder.addEventListener("click", async () => {
+        try {
+          const folder = await window.ghostAPI.selectProjectFolder();
+          if (folder) {
+            currentWorkspace = folder.replace(/\\/g, "/");
+            await createNewChat();
+          }
+        } catch (e) {
+          alert("Error seleccionando carpeta: " + e.message);
+        }
+      });
+    }
+
+    // Auto-load projects on startup
+    syncHostUI();
+    loadProjects();
 
     let isBusy = false;
     let typingMode = false;
@@ -820,7 +1522,7 @@
     window.addEventListener("dragover", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      e.dataTransfer.dropEffect = "copy";
+      dragCounter++;
       dropOverlay.classList.add("active");
     });
 
@@ -860,7 +1562,7 @@
           if (doc && !doc.error) {
             if (addDocumentToList(doc)) added++;
           } else if (doc && doc.error) {
-            addMsg("ai", `Error al cargar "${file.name}": ${doc.error}`);
+            addMsg("ai", `Error en "${file.name}": ${doc.error}`);
           }
         } catch (err) {
           addMsg("ai", `Error al cargar "${file.name}": ${err.message}`);
@@ -870,7 +1572,7 @@
       if (added > 0) {
         updateDocUI();
         const totalChars = activeDocuments.reduce((acc, d) => acc + d.charCount, 0);
-        addMsg("ai", `${added} documento(s) cargado(s) exitosamente. Total: ${activeDocuments.length} (${totalChars.toLocaleString()} caracteres).`);
+        addMsg("ai", `<strong>${added} documento(s) cargado(s) exitosamente.</strong> Total activos: <strong>${activeDocuments.length} documentos</strong> (${totalChars.toLocaleString()} caracteres).\n\nLa IA cruzara la informacion para responder tus consultas.`);
       }
     });
 
@@ -883,46 +1585,43 @@
 
     // Clear
     btnClear.addEventListener("click", () => {
+      chat.innerHTML = `<div class="msg hint">Chat limpiado. Continua en: <strong>${currentChatTitle || 'General'}</strong></div>`;
       conversationHistory = [];
-      const docCount = activeDocuments.length;
-      chat.innerHTML = `
-        <div class="msg hint">
-          <strong>Ghost AI</strong><br/>
-          ${docCount > 0 ? `Documentos cargados en memoria: <strong>${docCount}</strong>.` : 'Arrastra archivos para usarlos de contexto.'}
-        </div>`;
     });
 
-    function addDocumentToList(doc) {
-      if (!doc || !doc.name) return false;
-      const exists = activeDocuments.some(d => d.name === doc.name);
-      if (exists) {
-        addMsg("warning", `El documento "${doc.name}" ya esta cargado.`);
-        return false;
-      }
-      activeDocuments.push(doc);
+    function addDocumentToList(newDoc) {
+      const exists = activeDocuments.some(d => d.name === newDoc.name);
+      if (exists) return false;
+      activeDocuments.push(newDoc);
       return true;
     }
 
     function removeDocument(idx) {
-      const removed = activeDocuments.splice(idx, 1)[0];
-      updateDocUI();
-      addMsg("ai", `Se quito "${removed.name}". Quedan ${activeDocuments.length} documento(s).`);
+      if (idx >= 0 && idx < activeDocuments.length) {
+        const removed = activeDocuments.splice(idx, 1)[0];
+        updateDocUI();
+        addMsg("hint", `Documento eliminado: "${removed.name}". Quedan ${activeDocuments.length}.`);
+      }
     }
 
     function updateDocUI() {
       if (activeDocuments.length > 0) {
-        const pillsHtml = activeDocuments.map((doc, idx) => `
-          <div class="doc-pill" title="${doc.name} (${doc.charCount.toLocaleString()} caracteres)">
-            <span>${doc.name}</span>
-            <button onclick="removeDocByIndex(${idx})" title="Quitar">X</button>
-          </div>
+        const tagsHtml = activeDocuments.map((doc, idx) => `
+          <span class="doc-tag" title="${doc.name} (${doc.charCount.toLocaleString()} caracteres)">
+            ${doc.name}
+            <button class="btn-remove-doc" onclick="removeDocByIndex(${idx})" title="Quitar este documento">x</button>
+          </span>
         `).join("");
 
-        docStatusContainer.innerHTML = pillsHtml;
-        btnLoadDoc.textContent = "Agregar archivo";
+        docStatusContainer.innerHTML = tagsHtml;
+        btnLoadDoc.innerHTML = `Agregar Mas (${activeDocuments.length})`;
       } else {
-        docStatusContainer.innerHTML = `<span>Arrastra archivos o seleccionalos -></span>`;
-        btnLoadDoc.textContent = "Cargar archivo";
+        docStatusContainer.innerHTML = `
+          <span id="active-chat-indicator" style="font-size:11px; font-weight:600; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;" title="Conversacion activa">Chat: ${currentChatTitle || 'General'}</span>
+          <span style="color:var(--border-btn); font-size:10px;">|</span>
+          <span style="color:var(--text-muted); font-size:11px;">Arrastra un documento aqui -></span>
+        `;
+        btnLoadDoc.innerHTML = "Cargar PDF / Resumen";
       }
     }
 
@@ -942,26 +1641,29 @@
         if (addedCount > 0) {
           updateDocUI();
           const totalChars = activeDocuments.reduce((acc, d) => acc + d.charCount, 0);
-          addMsg("ai", `${addedCount} documento(s) agregado(s). Total: ${activeDocuments.length} (${totalChars.toLocaleString()} caracteres).`);
+          addMsg("ai", `<strong>${addedCount} documento(s) agregado(s).</strong> Total en memoria: <strong>${activeDocuments.length} documentos</strong> (${totalChars.toLocaleString()} caracteres).`);
         }
       } catch (err) {
         addMsg("ai", "Error al seleccionar documentos: " + err.message);
       }
     });
 
-    // Typing Mode Toggle
+    // Typing Mode Toggle (Icon-only ✎ with active toggle style)
     async function setTypingMode(enable) {
       typingMode = enable;
+      btnTypeToggle.textContent = "✎";
       if (typingMode) {
-        focusIndicator.textContent = "Modo teclado";
+        focusIndicator.textContent = "TECLADO";
         focusIndicator.classList.add("active");
-        btnTypeToggle.textContent = "Bloquear foco";
+        btnTypeToggle.classList.add("active");
+        btnTypeToggle.title = "Tipear: ACTIVO (Toca para desactivar foco)";
         await window.ghostAPI.setFocusMode(true);
         input.focus();
       } else {
-        focusIndicator.textContent = "Sin foco";
+        focusIndicator.textContent = "NO-FOCO";
         focusIndicator.classList.remove("active");
-        btnTypeToggle.textContent = "Tipear";
+        btnTypeToggle.classList.remove("active");
+        btnTypeToggle.title = "Tipear: INACTIVO (Toca para activar foco)";
         input.blur();
         await window.ghostAPI.setFocusMode(false);
       }
@@ -973,15 +1675,18 @@
 
     window.ghostAPI.onFocusStateChanged((state) => {
       typingMode = state;
+      btnTypeToggle.textContent = "✎";
       if (typingMode) {
-        focusIndicator.textContent = "Modo teclado";
+        focusIndicator.textContent = "TECLADO";
         focusIndicator.classList.add("active");
-        btnTypeToggle.textContent = "Bloquear foco";
+        btnTypeToggle.classList.add("active");
+        btnTypeToggle.title = "Tipear: ACTIVO (Toca para desactivar foco)";
         input.focus();
       } else {
-        focusIndicator.textContent = "Sin foco";
+        focusIndicator.textContent = "NO-FOCO";
         focusIndicator.classList.remove("active");
-        btnTypeToggle.textContent = "Tipear";
+        btnTypeToggle.classList.remove("active");
+        btnTypeToggle.title = "Tipear: INACTIVO (Toca para activar foco)";
         input.blur();
       }
     });
@@ -990,12 +1695,99 @@
       if (!typingMode) setTypingMode(true);
     });
 
+    // Slash commands list & autocomplete
+    const SLASH_COMMANDS = [
+      { cmd: "/develop", desc: "Flujo riguroso: Research, Plan, Implement, Test, Audit" },
+      { cmd: "/plan", desc: "Planificar paso a paso antes de ejecutar cambios" },
+      { cmd: "/goal", desc: "Ejecución autónoma exhaustiva hasta lograr el objetivo" },
+      { cmd: "/browser", desc: "Búsqueda web y navegación interactiva" },
+      { cmd: "/boost", desc: "Razonamiento profundo con múltiples perspectivas" },
+      { cmd: "/clear", desc: "Limpiar la pantalla y reiniciar conversación" },
+      { cmd: "/theme", desc: "Alternar modo Blanco y Negro (Claro / Oscuro)" },
+      { cmd: "/local", desc: "Cambiar a Modo Local (cálculos en esta PC)" },
+      { cmd: "/remote", desc: "Cambiar a Modo Remoto (conectar a PC remota)" }
+    ];
+
+    const slashPopup = document.getElementById("slash-popup");
+    let selectedSlashIdx = -1;
+
+    function renderSlashSuggestions(query) {
+      if (!slashPopup) return;
+      const filtered = SLASH_COMMANDS.filter(s => s.cmd.toLowerCase().startsWith(query.toLowerCase()));
+      if (filtered.length === 0) {
+        slashPopup.classList.remove("active");
+        slashPopup.innerHTML = "";
+        selectedSlashIdx = -1;
+        return;
+      }
+
+      slashPopup.innerHTML = "";
+      filtered.forEach((item, index) => {
+        const row = document.createElement("div");
+        row.className = `slash-item ${index === selectedSlashIdx ? 'selected' : ''}`;
+        row.innerHTML = `<span class="slash-cmd">${item.cmd}</span><span class="slash-desc">${item.desc}</span>`;
+        row.addEventListener("click", () => {
+          applySlashCommand(item.cmd);
+        });
+        slashPopup.appendChild(row);
+      });
+      slashPopup.classList.add("active");
+    }
+
+    function applySlashCommand(cmd) {
+      input.value = cmd + " ";
+      if (slashPopup) {
+        slashPopup.classList.remove("active");
+        selectedSlashIdx = -1;
+      }
+      input.focus();
+    }
+
     input.addEventListener("input", () => {
       input.style.height = "auto";
-      input.style.height = Math.min(input.scrollHeight, 85) + "px";
+      input.style.height = Math.min(input.scrollHeight, 90) + "px";
+
+      const val = input.value.trim();
+      if (val.startsWith("/")) {
+        const parts = val.split(" ");
+        if (parts.length === 1) {
+          renderSlashSuggestions(parts[0]);
+          return;
+        }
+      }
+      if (slashPopup) slashPopup.classList.remove("active");
     });
 
     input.addEventListener("keydown", (e) => {
+      if (slashPopup && slashPopup.classList.contains("active")) {
+        const items = slashPopup.querySelectorAll(".slash-item");
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          selectedSlashIdx = (selectedSlashIdx + 1) % items.length;
+          items.forEach((it, idx) => it.classList.toggle("selected", idx === selectedSlashIdx));
+          return;
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          selectedSlashIdx = (selectedSlashIdx - 1 + items.length) % items.length;
+          items.forEach((it, idx) => it.classList.toggle("selected", idx === selectedSlashIdx));
+          return;
+        }
+        if (e.key === "Enter" || e.key === "Tab") {
+          if (selectedSlashIdx >= 0 && items[selectedSlashIdx]) {
+            e.preventDefault();
+            const cmdText = items[selectedSlashIdx].querySelector(".slash-cmd").textContent;
+            applySlashCommand(cmdText);
+            return;
+          }
+        }
+        if (e.key === "Escape") {
+          slashPopup.classList.remove("active");
+          selectedSlashIdx = -1;
+          return;
+        }
+      }
+
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         send(input.value.trim());
@@ -1005,15 +1797,21 @@
       }
     });
 
+    document.addEventListener("click", (e) => {
+      if (slashPopup && !slashPopup.contains(e.target) && e.target !== input) {
+        slashPopup.classList.remove("active");
+      }
+    });
+
     sendBtn.addEventListener("click", () => {
       send(input.value.trim());
       setTypingMode(false);
     });
 
-    // Ask selected text
+    // Ask selected text in browser
     async function askSelected() {
       if (isBusy) {
-        addMsg("warning", "Hay una consulta en proceso, por favor espera...");
+        addMsg("warning", "Hay una consulta en proceso, espera un segundo...");
         return;
       }
 
@@ -1026,7 +1824,7 @@
       }
 
       if (!text || !text.trim()) {
-        addMsg("warning", "No se detecto texto seleccionado en la pantalla.\nResalta el texto con el mouse y vuelve a tocar 'Preguntar seleccion'.");
+        addMsg("warning", "No se detecto texto seleccionado en tu navegador.\n\n-> Resalta la pregunta con el mouse y vuelve a tocar 'Preguntar lo Seleccionado'.");
         return;
       }
 
@@ -1038,7 +1836,7 @@
     // Ask from clipboard
     async function askFromClipboard() {
       if (isBusy) {
-        addMsg("warning", "Hay una consulta en proceso, por favor espera...");
+        addMsg("warning", "Ya hay una pregunta en proceso, espera un segundo...");
         return;
       }
 
@@ -1051,7 +1849,7 @@
       }
 
       if (!text || !text.trim()) {
-        addMsg("warning", "El portapapeles esta vacio.\nCopia el texto deseado (Ctrl+C) y vuelve a intentar.");
+        addMsg("warning", "El portapapeles esta vacio.\n\n-> Selecciona la pregunta en tu navegador y presiona Ctrl+C primero.");
         return;
       }
 
@@ -1061,26 +1859,20 @@
     btnClip.addEventListener("click", askFromClipboard);
     window.ghostAPI.onAskClipboard(askFromClipboard);
 
-    function cleanClientText(str) {
-      if (!str) return "";
-      return str
-        .replace(/^#{1,6}\s+/gm, "")
-        .replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1")
-        .replace(/_{1,3}([^_]+)_{1,3}/g, "$1")
-        .replace(/^[-*_]{3,}\s*$/gm, "")
-        .replace(/^[\*\-]\s+/gm, "• ")
-        .replace(/`([^`]+)`/g, "$1")
-        .replace(/```[a-zA-Z]*\n?/g, "")
-        .replace(/\*+/g, "")
-        .replace(/\n{3,}/g, "\n\n")
-        .trim();
-    }
-
     function addMsg(type, text) {
-      if (type === "ai") text = cleanClientText(text);
       const el = document.createElement("div");
       el.className = `msg ${type}`;
-      el.textContent = text;
+      if (type === "ai" || type === "hint") {
+        if (typeof marked !== "undefined" && marked.parse) {
+          el.innerHTML = marked.parse(text || "");
+        } else if (window.ghostAPI && typeof window.ghostAPI.renderMarkdown === "function") {
+          el.innerHTML = window.ghostAPI.renderMarkdown(text);
+        } else {
+          el.textContent = text;
+        }
+      } else {
+        el.textContent = text;
+      }
       chat.appendChild(el);
       chat.scrollTop = chat.scrollHeight;
       return el;
@@ -1088,6 +1880,39 @@
 
     async function send(text) {
       if (!text || isBusy) return;
+
+      const trimmed = text.trim();
+      const lower = trimmed.toLowerCase();
+
+      // Handle client-side quick commands
+      if (lower === "/clear" || lower === "/limpiar") {
+        chat.innerHTML = `<div class="msg hint">Chat limpiado. Continua en: <strong>${currentChatTitle || 'General'}</strong></div>`;
+        conversationHistory = [];
+        input.value = "";
+        return;
+      }
+      if (lower === "/theme" || lower === "/tema") {
+        const isDark = document.body.classList.contains("theme-dark");
+        applyTheme(isDark ? "light" : "dark");
+        addMsg("hint", `Tema cambiado a <strong>${isDark ? 'Claro' : 'Oscuro'}</strong>.`);
+        input.value = "";
+        return;
+      }
+      if (lower === "/local") {
+        localStorage.setItem("ghost_host_mode", "local");
+        syncHostUI();
+        addMsg("hint", "Modo cambiado a <strong>Local</strong> (esta PC).");
+        input.value = "";
+        return;
+      }
+      if (lower === "/remote" || lower === "/remoto") {
+        localStorage.setItem("ghost_host_mode", "remote");
+        syncHostUI();
+        addMsg("hint", `Modo cambiado a <strong>Remoto</strong> (${getSavedRemoteHost()}).`);
+        input.value = "";
+        return;
+      }
+
       isBusy = true;
       sendBtn.disabled = true;
       btnClip.disabled = true;
@@ -1098,7 +1923,7 @@
       const apiKey = getSavedApiKey();
       if (!apiKey) {
         apiModal.classList.add("active");
-        addMsg("warning", "Debes configurar tu Gemini API Key primero presionando el boton 'API Key'.");
+        addMsg("warning", "Debes configurar tu Gemini API Key primero tocando 'API Key'.");
         isBusy = false;
         sendBtn.disabled = false;
         btnClip.disabled = false;
@@ -1113,7 +1938,7 @@
       const docCount = activeDocuments.length;
       loadingEl.innerHTML = `
         <div class="loading-bubble">
-          <span>${docCount > 0 ? `Consultando con base en ${docCount} documento(s)...` : 'Consultando IA...'}</span>
+          <span>${docCount > 0 ? `Analizando ${docCount} documento(s)...` : 'Consultando motor...'}</span>
           <span class="loading-dot"></span>
           <span class="loading-dot"></span>
           <span class="loading-dot"></span>
@@ -1122,12 +1947,51 @@
       chat.scrollTop = chat.scrollHeight;
 
       try {
+        const engineSelectVal = engineSelect ? engineSelect.value : "antigravity";
+        const hostMode = getSavedHostMode();
+        const remoteHost = getEffectiveHostUrl();
+
+        // Optional Remote Host routing
+        if (hostMode === "remote") {
+          try {
+            const rRes = await fetch(`${remoteHost}/api/solve`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                prompt: text,
+                type: "auto",
+                engine: engineSelectVal,
+                apiKey: apiKey,
+                conversationId: currentConversationId
+              })
+            });
+            const rData = await rRes.json();
+            loadingEl.remove();
+            if (rData.error) {
+              addMsg("ai", "Error de PC Remota: " + rData.error);
+            } else {
+              addMsg("ai", rData.solution);
+              conversationHistory.push({ role: "user", content: text });
+              conversationHistory.push({ role: "model", content: rData.solution });
+            }
+          } catch (rErr) {
+            loadingEl.remove();
+            addMsg("ai", `No se pudo conectar a la PC Remota (${remoteHost}): ${rErr.message}.\n\nVerifica que este activa o cambia a Modo Local en API Key.`);
+          }
+          isBusy = false;
+          sendBtn.disabled = false;
+          btnClip.disabled = false;
+          btnSelect.disabled = false;
+          return;
+        }
+
         const payload = {
           message: text,
           documents: activeDocuments.map(d => ({ name: d.name, content: d.content })),
           userApiKey: apiKey,
-          model: modelSelect ? modelSelect.value : "gemini-3.5-flash",
-          history: conversationHistory.slice(-6),
+          history: conversationHistory.slice(-14),
+          engine: engineSelectVal,
+          conversationId: currentConversationId
         };
 
         const res = await window.ghostAPI.sendMessage(payload);

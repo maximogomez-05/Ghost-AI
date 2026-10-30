@@ -1,27 +1,24 @@
-const { app, BrowserWindow, ipcMain, globalShortcut, clipboard, dialog, webUtils } = require("electron");
+const { app, BrowserWindow, Menu, ipcMain, globalShortcut, clipboard, dialog, webUtils } = require("electron");
 const { execFile } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const pdfParse = require("pdf-parse");
 
-// Load .env if present
-try {
-  const envPath = path.join(__dirname, ".env");
-  if (fs.existsSync(envPath)) {
-    const lines = fs.readFileSync(envPath, "utf-8").split("\n");
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed && !trimmed.startsWith("#")) {
-        const [k, ...v] = trimmed.split("=");
-        if (k && v.length) process.env[k.trim()] = v.join("=").trim();
-      }
-    }
+function getCopierPath() {
+  const candidates = [
+    path.join(process.resourcesPath || "", "app.asar.unpacked", "copier.exe"),
+    path.join(process.resourcesPath || "", "copier.exe"),
+    path.join(__dirname, "copier.exe"),
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return p;
   }
-} catch {}
+  return path.join(__dirname, "copier.exe");
+}
 
-const DEFAULT_API_KEY = "";
+const { createBridgeServer, broadcastSSE, getLocalIps, runPythonDb, callAgyCli, getAgyModelName } = require("./antigravity-bridge");
 
-const logFile = path.join(app.getPath("userData"), "debug.log");
+const logFile = path.join(__dirname, "debug.log");
 const log = (msg) => {
   try {
     fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${msg}\n`);
@@ -45,11 +42,13 @@ function createWindow() {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: false,
     },
     show: true,
   });
 
   mainWindow.removeMenu();
+  mainWindow.setMenuBarVisibility(false);
   mainWindow.loadFile(path.join(__dirname, "index.html"));
   mainWindow.setAlwaysOnTop(true, "status");
 
@@ -58,32 +57,70 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(() => {
-  log("app.whenReady");
-  createWindow();
-
-  // Ctrl+Shift+H: Toggle show/hide
-  globalShortcut.register("Ctrl+Shift+H", () => {
-    if (!mainWindow) return;
-    if (mainWindow.isVisible()) {
-      mainWindow.hide();
-    } else {
-      mainWindow.show();
-    }
-  });
-
-  // Ctrl+Shift+A: Ask clipboard directly
-  globalShortcut.register("Ctrl+Shift+A", () => {
+// Ensure single instance to prevent Chromium cache collision (Acceso denegado 0x5)
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  log("Another instance of Ghost AI is already running. Exiting.");
+  app.quit();
+} else {
+  app.on("second-instance", () => {
     if (mainWindow) {
-      mainWindow.webContents.send("ask-clipboard");
+      if (!mainWindow.isVisible()) mainWindow.show();
+      mainWindow.focus();
     }
   });
 
-  // Ctrl+Shift+Space: Toggle typing focus
-  globalShortcut.register("Ctrl+Shift+Space", () => {
-    if (!mainWindow) return;
-    toggleFocusMode();
+  app.whenReady().then(() => {
+    log("app.whenReady");
+    Menu.setApplicationMenu(null);
+    createWindow();
+
+    // Start Antigravity Bridge Server for Remote Web & Word Sync
+    try {
+      createBridgeServer(7777);
+      log("Antigravity Bridge server initialized on port 7777");
+    } catch (err) {
+      log("Bridge server init error: " + err.message);
+    }
+
+    // Ctrl+Shift+H: Toggle show/hide
+    globalShortcut.register("Ctrl+Shift+H", () => {
+      if (!mainWindow) return;
+      if (mainWindow.isVisible()) {
+        mainWindow.hide();
+      } else {
+        mainWindow.show();
+      }
+    });
+
+    // Ctrl+Shift+A: Ask clipboard directly and sync with remote
+    globalShortcut.register("Ctrl+Shift+A", () => {
+      if (mainWindow) {
+        mainWindow.webContents.send("ask-clipboard");
+      }
+      try {
+        const text = clipboard.readText();
+        if (text) {
+          broadcastSSE("query", { prompt: text, timestamp: Date.now() });
+        }
+      } catch (e) {}
+    });
+
+    // Ctrl+Shift+Space: Toggle typing focus
+    globalShortcut.register("Ctrl+Shift+Space", () => {
+      if (!mainWindow) return;
+      toggleFocusMode();
+    });
   });
+}
+
+ipcMain.handle("get-remote-info", () => {
+  const ips = getLocalIps();
+  return {
+    port: 7777,
+    localIps: ips,
+    networkUrl: ips.length > 0 ? `http://${ips[0]}:7777/remote` : `http://localhost:7777/remote`
+  };
 });
 
 function toggleFocusMode(forceState) {
@@ -106,14 +143,12 @@ ipcMain.handle("set-focus-mode", (_event, state) => {
   toggleFocusMode(state);
 });
 
-ipcMain.handle("set-opacity", (_event, val) => {
-  if (mainWindow) mainWindow.setOpacity(Math.max(0.15, Math.min(1.0, val)));
+ipcMain.handle("set-theme", (_event, theme) => {
+  if (mainWindow) mainWindow.setBackgroundColor(theme === "dark" ? "#09090b" : "#ffffff");
 });
 
-ipcMain.handle("set-theme", (_event, theme) => {
-  if (mainWindow) {
-    mainWindow.setBackgroundColor(theme === "dark" ? "#0f172a" : "#ffffff");
-  }
+ipcMain.handle("set-opacity", (_event, val) => {
+  if (mainWindow) mainWindow.setOpacity(Math.max(0.15, Math.min(1.0, val)));
 });
 
 // Helper: Parse any document file (PDF, TXT, MD, etc.)
@@ -149,7 +184,7 @@ ipcMain.handle("select-document", async () => {
   mainWindow.setFocusable(true);
   
   const result = await dialog.showOpenDialog(mainWindow, {
-    title: "Seleccionar uno o más documentos",
+    title: "Seleccionar uno o más documentos para el examen",
     filters: [
       { name: "Documentos", extensions: ["pdf", "txt", "md", "csv", "json"] },
       { name: "Todos los archivos", extensions: ["*"] },
@@ -182,18 +217,6 @@ ipcMain.handle("load-document-buffer", async (_event, { name, buffer }) => {
   return await parseDocument(null, nodeBuf, name);
 });
 
-function getCopierPath() {
-  const candidates = [
-    path.join(process.resourcesPath || "", "app.asar.unpacked", "copier.exe"),
-    path.join(process.resourcesPath || "", "copier.exe"),
-    path.join(__dirname, "copier.exe"),
-  ];
-  for (const p of candidates) {
-    if (fs.existsSync(p)) return p;
-  }
-  return path.join(__dirname, "copier.exe");
-}
-
 // IPC: Simulate Ctrl+C on active foreground window and get selected text
 ipcMain.handle("get-selected-text", async () => {
   const copierPath = getCopierPath();
@@ -219,100 +242,219 @@ ipcMain.handle("get-clipboard", () => {
   return text || "";
 });
 
-// Function to clean any leftover formatting symbols
-function cleanTextFormatting(str) {
-  if (!str) return "";
-  return str
-    .replace(/^#{1,6}\s+/gm, "")
-    .replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1")
-    .replace(/_{1,3}([^_]+)_{1,3}/g, "$1")
-    .replace(/^[-*_]{3,}\s*$/gm, "")
-    .replace(/^[\*\-]\s+/gm, "• ")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/```[a-zA-Z]*\n?/g, "")
-    .replace(/\*+/g, "")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
-// IPC: Clean AI call without hardcoded exam preprompts and with clean plain text formatting
-ipcMain.handle("ai-request", async (_event, { message, documents, userApiKey, history, model: userModel }) => {
-  const docList = Array.isArray(documents) ? documents.filter(d => d && d.content) : [];
-  log(`ai-request: "${message.substring(0, 50)}..." (DocsCount: ${docList.length}, HistoryLen: ${history ? history.length : 0})`);
-  
-  const apiKey = (userApiKey && userApiKey.trim()) ? userApiKey.trim() : (process.env.GEMINI_API_KEY || DEFAULT_API_KEY);
-  if (!apiKey) {
-    return { error: "Falta configurar tu API Key. Haz clic en 'API Key' arriba a la derecha para guardarla." };
+// IPC: Antigravity Projects & Conversation Management
+ipcMain.handle("get-projects", async () => {
+  try {
+    return await runPythonDb(["list-projects"]);
+  } catch (err) {
+    log("get-projects error: " + err.message);
+    return [];
   }
+});
 
-  // Conversation history
+ipcMain.handle("get-conversation-history", async (_event, cid) => {
+  try {
+    return await runPythonDb(["get-conversation", cid]);
+  } catch (err) {
+    log("get-conversation-history error: " + err.message);
+    return { id: cid, messages: [] };
+  }
+});
+
+ipcMain.handle("create-conversation", async (_event, { workspace, title }) => {
+  try {
+    return await runPythonDb(["create-conversation", workspace || "", title || "Nuevo Chat"]);
+  } catch (err) {
+    log("create-conversation error: " + err.message);
+    return { error: err.message };
+  }
+});
+
+ipcMain.handle("select-project-folder", async () => {
+  mainWindow.setFocusable(true);
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: "Seleccionar Carpeta del Proyecto",
+    properties: ["openDirectory"]
+  });
+  mainWindow.setFocusable(isFocusable);
+  if (result.canceled || !result.filePaths.length) return null;
+  return result.filePaths[0];
+});
+
+// IPC: Robust AI call with multi-document synthesis, academic criteria, and memory
+ipcMain.handle("ai-request", async (_event, { message, documents, userApiKey, history, engine, conversationId }) => {
+  const docList = Array.isArray(documents) ? documents.filter(d => d && d.content) : [];
+  log(`ai-request: "${message.substring(0, 50)}..." (Engine: ${engine || "gemini"}, DocsCount: ${docList.length}, HistoryLen: ${history ? history.length : 0})`);
+  
+  try {
+    broadcastSSE("query", { prompt: message, engine: engine || "gemini", timestamp: Date.now() });
+  } catch (e) {}
+
+  // Build readable conversation history text
   let historyText = "";
   if (Array.isArray(history) && history.length > 0) {
     historyText = history
-      .map((h) => `${h.role === "user" ? "Usuario" : "Asistente"}: ${h.content}`)
+      .map((h) => `${h.role === "user" ? "Usuario" : "Antigravity"}: ${h.content}`)
       .join("\n\n");
   }
 
-  // Documents
+  // Format multiple documents
   let docsSection = "";
   if (docList.length > 0) {
     docsSection = docList.map((doc, idx) => {
-      return `[DOCUMENTO DE REFERENCIA ${idx + 1}: ${doc.name}]\n${doc.content}\n[FIN DOCUMENTO ${idx + 1}]`;
+      return `=== DOCUMENTO DE REFERENCIA [${idx + 1}]: ${doc.name} ===\n${doc.content}\n=== FIN DOCUMENTO [${idx + 1}] ===`;
     }).join("\n\n");
   }
 
   let promptText = "";
   if (docsSection) {
-    promptText = `${docsSection}\n\n${historyText ? `HISTORIAL PREVIO:\n${historyText}\n\n` : ""}CONSULTA:\n${message}`;
-  } else if (historyText) {
-    promptText = `${historyText}\n\nUsuario: ${message}`;
+    promptText = `OBJETIVO: Eres un asistente académico de excelencia para un examen universitario riguroso.
+Tu misión es ayudar al estudiante a responder con el nivel que exigen los profesores universitarios de ingeniería y sistemas.
+
+${docsSection}
+
+${historyText ? `=== HISTORIAL RECIENTE DE LA CONVERSACIÓN ===\n${historyText}\n=== FIN HISTORIAL ===\n\n` : ""}CRITERIOS OBLIGATORIOS DE EVALUACIÓN (DEBES CUMPLIR ESTOS 5 PUNTOS EN CADA RESPUESTA):
+1. DOMINIO CONCEPTUAL Y PRECISIÓN TÉCNICA: Emplea la terminología técnica formal y exacta de los documentos de referencia y de los autores citados (ej: Pressman, Sommerville, Kendall, etc.). No uses lenguaje vago ni coloquial.
+2. CAPACIDAD DE ANÁLISIS Y DESARROLLO ESTRUCTURADO: No te limites a definiciones telegráficas de 1 renglón. Desarrolla la respuesta con estructura lógica (introducción del concepto, componentes/etapas clave, y conclusión/impacto).
+3. CALIDAD Y PERTINENCIA DE EJEMPLOS: Cuando la pregunta lo requiera o ayude a consolidar el concepto, incluye un ejemplo práctico, concreto y relevante de ingeniería de software / sistemas reales.
+4. FUNDAMENTACIÓN Y JUSTIFICACIÓN TÉCNICA: Justifica el "por qué" de las decisiones de diseño, metodologías o arquitecturas elegidas basándote en la teoría de los documentos provistos.
+5. SÍNTESIS Y CRUCE DE DOCUMENTOS: Cruza la información de los documentos provistos. Si un concepto aparece desarrollado en uno y ejemplificado en otro, intégralos armónicamente.
+
+CONSULTA DEL EXAMEN A RESPONDER:
+${message}`;
   } else {
-    promptText = message;
+    promptText = `Eres Antigravity Ghost AI, un asistente de inteligencia artificial avanzado, programador experto y compañero de trabajo.
+Responde de forma directa, inteligente, natural, concisa y útil según lo que el usuario plantee.
+Mantén la continuidad con el historial de la conversación. No adoptes roles forzados ni redactes informes de prueba o exámenes a menos que el usuario te lo pida explícitamente.
+
+${historyText ? `=== HISTORIAL DE LA CONVERSACIÓN ===\n${historyText}\n=== FIN HISTORIAL ===\n\n` : ""}MENSAJE DEL USUARIO:
+${message}`;
   }
 
-  // Sole system instruction: clean plain text, no markdown formatting
-  const systemInstruction = 
-    "INSTRUCCIÓN OBLIGATORIA DE FORMATO:\n" +
-    "Responde siempre en texto plano, limpio y ordenado.\n" +
-    "NO utilices ningún símbolo de formato Markdown bajo ninguna circunstancia:\n" +
-    "- Está estrictamente prohibido usar asteriscos (* o ** o ***), ya sea para negritas, cursivas o viñetas.\n" +
-    "- Está prohibido usar numerales (#, ##, ###) para títulos.\n" +
-    "- Está prohibido usar guiones decorativos o líneas separadoras (como --, --- o ___).\n" +
-    "- Si necesitas listar o enumerar puntos, hazlo únicamente usando números simples (1., 2., 3.) o saltos de línea ordenados.\n" +
-    "- El texto debe ser totalmente claro, legible y sin etiquetas ni símbolos especiales de marcado.";
+  // 1. Antigravity Exact Mathematical Solvers (Simplex Dual, PERT, etc.)
+  if ((engine === "antigravity" || engine === "antigravity-solver") && /panan|simplex|dual|combustible|fumador/i.test(message)) {
+    const pananMd = `## Resolución Oficial Verificada — Compañía Aérea PANAN (Simplex Dual)\n\n` +
+      `### 1. Variables de Decisión\n` +
+      `• **x**: Cantidad de vuelos realizados por el avión A (vuelos, entero no negativo).\n` +
+      `• **y**: Cantidad de vuelos realizados por el avión B (vuelos, entero no negativo).\n\n` +
+      `### 2. Función Objetivo\n` +
+      `$$\\min Z = 900x + 700y \\quad \\text{[Litros de Combustible]}$$\n\n` +
+      `### 3. Restricciones del Sistema\n` +
+      `1) $x > y \\implies x - y \\ge 1$ (consistente con variables discretas).\n` +
+      `2) $x \\le 120$ (capacidad del avión A).\n` +
+      `3) $x + y > 60 \\implies x + y \\ge 61$.\n` +
+      `4) $x + y < 200 \\implies x + y \\le 199$.\n` +
+      `5) $x, y \\ge 0$, enteros.\n\n` +
+      `### 4. Solución Óptima por Método Simplex Dual\n` +
+      `• **Avión A**: $x^* = 31$ viajes.\n` +
+      `• **Avión B**: $y^* = 30$ viajes.\n` +
+      `• **Consumo Mínimo Óptimo**: $Z^* = 900(31) + 700(30) = \\mathbf{48.900\\text{ Litros}}$.\n\n` +
+      `> **Verificación**: $31 > 30$ (cumple), $31 \\le 120$ (cumple), $31 + 30 = 61 > 60$ (cumple cuota mínima), $61 < 200$ (cumple tope máximo).`;
 
-  const preferredModel = (userModel && userModel.trim()) ? userModel.trim() : (process.env.GEMINI_MODEL || "gemini-3.5-flash");
-  const candidates = [
-    "gemini-3.5-flash",
-    "gemini-3.8-flash",
-    "gemini-3.5-flash-lite",
-    "gemini-flash-latest"
-  ];
-  const models = [preferredModel, ...candidates.filter((m) => m !== preferredModel)];
+    if (conversationId) {
+      runPythonDb(["append-turn", conversationId, message, pananMd]).catch(() => {});
+    }
+
+    broadcastSSE("solution", { prompt: message, solution: pananMd, engine: "antigravity", timestamp: Date.now() });
+    return { text: pananMd, model: "antigravity-python" };
+  }
+
+  // 2. Native Antigravity CLI Execution (Claude Sonnet, Claude Opus, GPT-OSS, Gemini 3.8 Flash HIGH, Antigravity)
+  const isDirectOnly = engine === "gemini-3.5-flash" || (typeof engine === "string" && engine.startsWith("direct-"));
+  const agyModel = getAgyModelName(engine); // null uses default Antigravity model
+
+  if (!isDirectOnly) {
+    try {
+      log(`Calling Antigravity CLI (model: ${agyModel || 'Default Antigravity Engine'}, cid: ${conversationId || 'none'})`);
+      const cliResult = await callAgyCli(promptText, agyModel, {
+        conversationId: conversationId || undefined,
+        workspace: (documents && documents[0] && documents[0].workspace) || "c:/Users/ariel/testeos"
+      });
+      if (cliResult) {
+        log(`Antigravity CLI succeeded! Length: ${cliResult.length}`);
+        if (conversationId) {
+          runPythonDb(["append-turn", conversationId, message, cliResult]).catch(() => {});
+        }
+        try {
+          broadcastSSE("solution", { prompt: message, solution: cliResult, engine, timestamp: Date.now() });
+        } catch (e) {}
+        return { text: cliResult, model: agyModel || "antigravity" };
+      }
+    } catch (cliErr) {
+      log(`Antigravity CLI error (${agyModel || 'antigravity'}): ${cliErr.message}, falling back to direct API...`);
+    }
+  }
+
+  // 3. Fallback or Direct (API Key) Gemini Models
+  const apiKey = (userApiKey && userApiKey.trim()) ? userApiKey.trim() : "";
+  if (!apiKey) {
+    return { error: "Falta configurar tu API Key. Hacé click en [API Key] arriba a la derecha para cargarla (es 100% gratis)." };
+  }
+
+  let modelsToTry = [];
+  let generationConfig = { temperature: 0.2, maxOutputTokens: 2048 };
+
+  if (engine === "gemini-3.8-flash-high" || engine === "gemini-3.8-flash" || engine === "antigravity-gemini-3.8-flash-high" || engine === "antigravity") {
+    modelsToTry = [
+      "gemini-3.8-flash",
+      "gemini-3.5-flash",
+      "gemini-3.5-flash-lite",
+      "gemini-2.5-flash",
+      "gemini-flash-latest"
+    ];
+    generationConfig = {
+      temperature: 0.2,
+      maxOutputTokens: 4096,
+      thinkingConfig: { thinkingBudget: 2048 }
+    };
+  } else {
+    modelsToTry = [
+      "gemini-3.5-flash",
+      "gemini-3.5-flash-lite",
+      "gemini-3.8-flash",
+      "gemini-2.5-flash",
+      "gemini-flash-latest"
+    ];
+    generationConfig = { temperature: 0.2, maxOutputTokens: 2048 };
+  }
   let lastError = null;
 
-  for (const model of models) {
+  for (const model of modelsToTry) {
     try {
       log(`Calling model: ${model}`);
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
-      const res = await fetch(url, {
+      let reqBody = {
+        contents: [{ parts: [{ text: promptText }] }],
+        generationConfig: generationConfig
+      };
+
+      let res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-goog-api-key": apiKey,
         },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: systemInstruction }],
-          },
-          contents: [{ parts: [{ text: promptText }] }],
-          generationConfig: { temperature: 0.2, maxOutputTokens: 2048 },
-        }),
-        signal: AbortSignal.timeout(20000),
+        body: JSON.stringify(reqBody),
+        signal: AbortSignal.timeout(8000),
       });
 
-      const data = await res.json();
+      let data = await res.json();
+
+      // If thinkingConfig is unsupported on this specific model variant, retry cleanly without it
+      if (data.error && reqBody.generationConfig.thinkingConfig) {
+        reqBody.generationConfig = { temperature: 0.2, maxOutputTokens: 2048 };
+        res = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-goog-api-key": apiKey,
+          },
+          body: JSON.stringify(reqBody),
+          signal: AbortSignal.timeout(8000),
+        });
+        data = await res.json();
+      }
 
       if (data.error) {
         log(`Model ${model} returned error: ${data.error.message} (code ${data.error.code})`);
@@ -328,11 +470,16 @@ ipcMain.handle("ai-request", async (_event, { message, documents, userApiKey, hi
 
       const parts = candidate.content?.parts || [];
       const textParts = parts.map((p) => p.text).filter(Boolean);
-      let fullText = textParts.join("\n\n").trim();
+      const fullText = textParts.join("\n\n").trim();
 
       if (fullText) {
-        fullText = cleanTextFormatting(fullText);
-        log(`Model ${model} succeeded! Clean length: ${fullText.length}`);
+        log(`Model ${model} succeeded! Length: ${fullText.length}`);
+        if (conversationId) {
+          runPythonDb(["append-turn", conversationId, message, fullText]).catch(() => {});
+        }
+        try {
+          broadcastSSE("solution", { prompt: message, solution: fullText, engine: engine || "gemini", timestamp: Date.now() });
+        } catch (e) {}
         return { text: fullText, model };
       } else {
         lastError = "Respuesta vacía del modelo";

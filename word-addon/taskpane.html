@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Resolutor</title>
+
+  <!-- Office JavaScript API -->
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+
+  <!-- Marked library for markdown to clean HTML conversion -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <link rel="stylesheet" href="taskpane.css?v=4.5" />
+</head>
+<body class="theme-light">
+  <!-- Invisible Right-Edge Panic Zone -->
+  <div id="panic-zone" class="panic-zone"></div>
+
+  <!-- Stealth Toolbar: strictly 0% opacity by default, 100% on hover -->
+  <div class="stealth-bar" id="stealth-bar">
+    <div class="opacity-group">
+      <input type="range" id="opacity-slider" min="0" max="100" value="20" class="opacity-range" />
+      <span id="opacity-val" class="opacity-value">20%</span>
+    </div>
+    <div class="stealth-actions">
+      <button class="btn-stealth" id="btn-remote" title="Antigravity Remote (Celular / Web)">Remoto</button>
+      <button class="btn-stealth" id="btn-theme" title="Modo Claro / Oscuro">☾</button>
+      <button class="btn-stealth" id="btn-settings" title="Configurar clave">⚿</button>
+    </div>
+  </div>
+
+  <!-- Content Container: Opacity is dynamically controlled here -->
+  <div class="container" id="stealth-content">
+    <div>
+      <div class="section-label" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Motor de IA</span>
+        <span id="bridge-status-badge" style="font-size: 10px; font-weight: 600; color: #10b981; display: none;">● Antigravity Bridge</span>
+      </div>
+      <select id="engine-select" class="mode-select">
+        <optgroup label="Antigravity">
+          <option value="gemini-3.8-flash-high" selected>Gemini 3.8 Flash HIGH (Razonamiento)</option>
+          <option value="claude-sonnet-4.6">Claude Sonnet 4.6 (Thinking)</option>
+          <option value="claude-opus-4.6">Claude Opus 4.6 (Thinking)</option>
+          <option value="gpt-oss-120b">GPT-OSS 120B (Medium)</option>
+          <option value="antigravity">Antigravity Solver (Python Exacto)</option>
+        </optgroup>
+        <optgroup label="Directo (API Key)">
+          <option value="gemini-3.5-flash">Gemini 3.5 Flash (Directo)</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div>
+      <div class="section-label">Tipo de Ejercicio</div>
+      <select id="exercise-type" class="mode-select">
+        <option value="auto">Auto-Detectar Ejercicio</option>
+        <option value="simplex">Programación Lineal (Simplex Primal / Dual)</option>
+        <option value="pert">Diagrama de Redes (PERT / CPM)</option>
+        <option value="transporte">Transporte (Noroeste / Costos Mín / Vogel / MODI)</option>
+        <option value="hungaro">Asignación (Método Húngaro)</option>
+        <option value="decision">Teoría de Decisión (Wald, Savage, Laplace, Hurwicz)</option>
+        <option value="arbol">Árboles de Decisión (Valor Esperado)</option>
+        <option value="markov">Cadenas de Markov / Transición</option>
+        <option value="teoria">Pregunta Teórica / Desarrollo</option>
+      </select>
+    </div>
+
+    <div>
+      <div class="section-label">
+        <span>Consigna del Ejercicio</span>
+        <button class="btn btn-secondary" id="btn-get-selection" style="padding: 3px 8px; font-size: 11px;" title="Toma el texto resaltado en Word">
+          Tomar de Word
+        </button>
+      </div>
+      <textarea id="prompt-input" class="textarea-box" placeholder="Selecciona el ejercicio en tu hoja de Word y toca 'Tomar de Word', o pega la consigna aquí..."></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-solve">
+        Resolver Paso a Paso
+      </button>
+      <button class="btn btn-secondary" id="btn-clear" style="flex: 0.35;" title="Limpiar">
+        Limpiar
+      </button>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading" class="loading-box">
+      <div class="spinner"></div>
+      <span id="loading-text">Calculando tablas y pasos matemáticos...</span>
+    </div>
+
+    <!-- Result Area -->
+    <div id="result-container" style="display: none; flex-direction: column; gap: 8px; flex: 1;">
+      
+      <!-- Pinned Previous Consultation Header (Sticky Accordion Header) -->
+      <div id="pinned-history-banner" class="pinned-history-banner" style="display: none;">
+        <button id="btn-pinned-prev" class="btn-pinned-header" title="Ir a la consulta anterior">
+          <span class="pinned-icon">⤴</span>
+          <span class="pinned-tag">Anterior:</span>
+          <span id="pinned-prev-title" class="pinned-title">...</span>
+        </button>
+      </div>
+
+      <!-- Navigation & Turn Status Bar -->
+      <div class="result-header">
+        <div class="history-controls">
+          <button class="btn btn-secondary btn-nav-pill" id="btn-turn-prev" title="Consulta anterior">◀</button>
+          <span id="turn-badge" class="turn-badge">Consulta 1 de 1</span>
+          <button class="btn btn-secondary btn-nav-pill" id="btn-turn-next" title="Siguiente consulta" disabled>▶</button>
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <span id="model-badge" style="font-size: 10px; color: var(--text-muted); background: var(--bg-hover); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border);">gemini-3.8-flash</span>
+          <button class="btn btn-secondary" id="btn-cloud-download" style="padding: 3px 8px; font-size: 11px;" title="Generar enlace de descarga para celular">
+            Celular
+          </button>
+          <button class="btn btn-secondary" id="btn-copy-clipboard" style="padding: 3px 8px; font-size: 11px;">
+            Copiar
+          </button>
+        </div>
+      </div>
+
+      <!-- User Query Snippet for Active Turn -->
+      <div id="turn-user-box" class="turn-user-box">
+        <span class="turn-user-tag">Consigna / Pregunta:</span>
+        <div id="turn-user-text" class="turn-user-text"></div>
+      </div>
+
+      <!-- Rendered Solution View -->
+      <div id="result-view" class="result-card"></div>
+
+      <!-- Pinned Next Consultation Banner (Visible when browsing past turns) -->
+      <div id="pinned-next-banner" class="pinned-history-banner pinned-next" style="display: none;">
+        <button id="btn-pinned-next" class="btn-pinned-header" title="Ir a la siguiente consulta">
+          <span class="pinned-tag">Siguiente:</span>
+          <span id="pinned-next-title" class="pinned-title">...</span>
+          <span class="pinned-icon">⤵</span>
+        </button>
+      </div>
+
+      <!-- Footer Metadata: Model Indicator & Insertion Hint (Never inserted into Word) -->
+      <div class="cursor-hint" style="display: flex; justify-content: space-between; align-items: center; margin: 6px 0 8px 0; font-size: 10px;">
+        <span id="card-model-footer" style="color: var(--accent); font-weight: 500;">Modelo: gemini-3.8-flash</span>
+        <span>Inserta en tu cursor</span>
+      </div>
+
+      <div class="btn-row" style="gap: 6px;">
+        <button class="btn btn-insert" id="btn-insert-word" style="flex: 1; padding: 6px 8px; font-size: 11px;" title="Inserta el texto y tablas del desarrollo en tu cursor">
+          Insertar Desarrollo
+        </button>
+        <button class="btn btn-secondary" id="btn-insert-drawing" style="display: none; flex: 1; padding: 6px 8px; font-size: 11px;" title="Inserta el diagrama de red vectorial en tu cursor">
+          Insertar Diagrama
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- API Key Modal -->
+  <div id="api-modal" class="modal">
+    <div class="modal-box">
+      <h4>Configurar Gemini API Key</h4>
+      <p>
+        Ingresa tu clave de Google Gemini para habilitar el resolutor en tu Word Online.
+      </p>
+      <input type="password" id="modal-key-input" placeholder="Pega tu API Key aquí..." />
+      <div class="modal-link-box">
+        Obtener gratis: <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a>
+      </div>
+
+      <hr style="border:0; border-top:1px solid var(--border); margin:10px 0;" />
+      <h4 style="margin-bottom:4px; font-size:12px;">🖥️ Motor Antigravity</h4>
+      <p style="font-size:11px; margin-bottom:8px;">
+        Elige si resolver localmente o conectar con tu PC de escritorio remota:
+      </p>
+      <div style="display:flex; flex-direction:column; gap:6px; font-size:11.5px; margin-bottom:8px;">
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="radio" name="word-host-mode" value="local" id="word-radio-local" checked>
+          <span>📍 <strong>Modo Local:</strong> Esta máquina (por defecto)</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="radio" name="word-host-mode" value="remote" id="word-radio-remote">
+          <span>📡 <strong>Modo Remoto:</strong> PC de Escritorio / Túnel</span>
+        </label>
+      </div>
+      <input type="text" id="word-remote-host-input" placeholder="http://192.168.1.55:7777" style="display:none; margin-bottom:6px; font-size:11px;" />
+
+      <div class="btn-row" style="margin-top: 6px;">
+        <button class="btn btn-secondary" id="btn-modal-cancel">Cancelar</button>
+        <button class="btn btn-primary" id="btn-modal-save">Guardar Ajustes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Antigravity Remote Modal -->
+  <div id="remote-modal" class="modal">
+    <div class="modal-box" style="max-width: 320px;">
+      <h4>📱 Antigravity Remote</h4>
+      <p style="font-size: 11px; margin-bottom: 8px;">
+        Abre Ghost en tu celular o cualquier navegador remoto para ver las soluciones en vivo y descargar los Word/PDF.
+      </p>
+      
+      <div style="background: var(--bg-hover); padding: 8px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 10px; font-family: monospace; font-size: 11px; word-break: break-all;" id="remote-url-display">
+        http://localhost:7777/remote
+      </div>
+
+      <div class="btn-row" style="margin-top: 6px;">
+        <button class="btn btn-secondary" id="btn-remote-close">Cerrar</button>
+        <button class="btn btn-primary" id="btn-copy-remote-url">Copiar Enlace</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="taskpane.js?v=6.1"></script>
+</body>
+</html>
