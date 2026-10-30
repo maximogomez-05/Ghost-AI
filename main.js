@@ -18,7 +18,12 @@ function getCopierPath() {
 
 const { createBridgeServer, broadcastSSE, getLocalIps, runPythonDb, callAgyCli, getAgyModelName } = require("./antigravity-bridge");
 
-const logFile = path.join(__dirname, "debug.log");
+let logFile;
+try {
+  logFile = path.join(app.getPath("userData"), "debug.log");
+} catch {
+  logFile = path.join(__dirname, "debug.log");
+}
 const log = (msg) => {
   try {
     fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${msg}\n`);
@@ -37,7 +42,7 @@ function createWindow() {
     autoHideMenuBar: true,
     alwaysOnTop: true,
     backgroundColor: "#ffffff",
-    focusable: false, // Stealth: clicking does not steal focus from browser!
+    focusable: true, // Focusable initially so it shows on taskbar and appears on top
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -50,7 +55,7 @@ function createWindow() {
   mainWindow.removeMenu();
   mainWindow.setMenuBarVisibility(false);
   mainWindow.loadFile(path.join(__dirname, "index.html"));
-  mainWindow.setAlwaysOnTop(true, "status");
+  mainWindow.setAlwaysOnTop(true);
 
   mainWindow.webContents.on("console-message", (_event, _level, message) => {
     log(`[Renderer] ${message}`);
@@ -63,9 +68,13 @@ if (!gotTheLock) {
   log("Another instance of Ghost AI is already running. Exiting.");
   app.quit();
 } else {
-  app.on("second-instance", () => {
+    app.on("second-instance", () => {
     if (mainWindow) {
+      mainWindow.setFocusable(true);
+      if (mainWindow.isMinimized()) mainWindow.restore();
       if (!mainWindow.isVisible()) mainWindow.show();
+      mainWindow.setAlwaysOnTop(true);
+      mainWindow.show();
       mainWindow.focus();
     }
   });
