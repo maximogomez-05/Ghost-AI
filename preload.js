@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld("ghostAPI", {
   setTheme: (theme) => ipcRenderer.invoke("set-theme", theme),
   getClipboard: () => ipcRenderer.invoke("get-clipboard"),
   getSelectedText: () => ipcRenderer.invoke("get-selected-text"),
+  copyText: (text) => ipcRenderer.invoke("copy-text", text),
   selectDocument: () => ipcRenderer.invoke("select-document"),
   loadDocumentPath: (filePath) => ipcRenderer.invoke("load-document-path", filePath),
   loadDocumentBuffer: (name, buffer) => ipcRenderer.invoke("load-document-buffer", { name, buffer }),

@@ -161,7 +161,7 @@ function callAgyCli(promptText, modelName = null, options = {}) {
         (err, stdout, stderr) => {
           const out = (stdout || "").trim();
           const errStr = (stderr || "").trim();
-          if (out) return resolve(out);
+          if (out && !out.toLowerCase().includes("sin respuesta")) return resolve(out);
           if (err) {
             // If trajectory not found, retry once without --conversation
             if (options.conversationId && cliArgs.some(a => a.startsWith("--conversation")) && /trajectory not found/i.test(errStr)) {
@@ -172,7 +172,8 @@ function callAgyCli(promptText, modelName = null, options = {}) {
             }
             return reject(new Error(errStr || err.message || "Error al ejecutar Antigravity CLI"));
           }
-          resolve(out || "Sin respuesta del modelo Antigravity.");
+          if (out) return resolve(out);
+          return reject(new Error("Salida vacía de Antigravity CLI"));
         }
       );
     };
@@ -247,7 +248,7 @@ async function callGemini(prompt, userApiKey, systemInstruction, engine = "gemin
 }
 
 // Create HTTP Server
-function createBridgeServer(port = DEFAULT_PORT) {
+function createBridgeServer(port = DEFAULT_PORT, options = {}) {
   const server = http.createServer(async (req, res) => {
     // Enable CORS for Word Add-in and external mobile clients
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -262,6 +263,22 @@ function createBridgeServer(port = DEFAULT_PORT) {
 
     const parsedUrl = new URL(req.url, `http://localhost:${port}`);
     const pathname = parsedUrl.pathname;
+
+    // Window control endpoints
+    if (pathname === "/api/window/show") {
+      const result = options.showWindow ? options.showWindow() : false;
+      const info = options.getWindowInfo ? options.getWindowInfo() : null;
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true, showed: result, info }));
+      return;
+    }
+
+    if (pathname === "/api/window") {
+      const info = options.getWindowInfo ? options.getWindowInfo() : null;
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true, info }));
+      return;
+    }
 
     // 1. Status endpoint
     if (pathname === "/api/status" && req.method === "GET") {

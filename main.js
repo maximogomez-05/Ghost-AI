@@ -42,7 +42,8 @@ function createWindow() {
     autoHideMenuBar: true,
     alwaysOnTop: true,
     backgroundColor: "#ffffff",
-    focusable: true, // Focusable initially so it shows on taskbar and appears on top
+    skipTaskbar: false,
+    focusable: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -52,13 +53,48 @@ function createWindow() {
     show: true,
   });
 
-  mainWindow.removeMenu();
   mainWindow.setMenuBarVisibility(false);
+  mainWindow.setAutoHideMenuBar(true);
   mainWindow.loadFile(path.join(__dirname, "index.html"));
-  mainWindow.setAlwaysOnTop(true);
+  mainWindow.setAlwaysOnTop(true, "normal");
+  mainWindow.show();
+  mainWindow.focus();
 
   mainWindow.webContents.on("console-message", (_event, _level, message) => {
     log(`[Renderer] ${message}`);
+  });
+
+  // Right-click context menu for Copy, Cut, Paste, and Select All
+  mainWindow.webContents.on("context-menu", (_event, params) => {
+    const menuTemplate = [];
+
+    if (params.isEditable) {
+      menuTemplate.push(
+        { role: "undo", label: "Deshacer" },
+        { role: "redo", label: "Rehacer" },
+        { type: "separator" },
+        { role: "cut", label: "Cortar" },
+        { role: "copy", label: "Copiar" },
+        { role: "paste", label: "Pegar" },
+        { type: "separator" },
+        { role: "selectAll", label: "Seleccionar todo" }
+      );
+    } else if (params.selectionText && params.selectionText.trim().length > 0) {
+      menuTemplate.push(
+        { role: "copy", label: "Copiar" },
+        { type: "separator" },
+        { role: "selectAll", label: "Seleccionar todo" }
+      );
+    } else {
+      menuTemplate.push(
+        { role: "selectAll", label: "Seleccionar todo" }
+      );
+    }
+
+    if (menuTemplate.length > 0) {
+      const contextMenu = Menu.buildFromTemplate(menuTemplate);
+      contextMenu.popup({ window: mainWindow });
+    }
   });
 }
 
@@ -73,7 +109,7 @@ if (!gotTheLock) {
       mainWindow.setFocusable(true);
       if (mainWindow.isMinimized()) mainWindow.restore();
       if (!mainWindow.isVisible()) mainWindow.show();
-      mainWindow.setAlwaysOnTop(true);
+      mainWindow.setAlwaysOnTop(true, "normal");
       mainWindow.show();
       mainWindow.focus();
     }
@@ -81,12 +117,45 @@ if (!gotTheLock) {
 
   app.whenReady().then(() => {
     log("app.whenReady");
-    Menu.setApplicationMenu(null);
+
+    // Maintain native edit accelerators (Ctrl+C, Ctrl+V, Ctrl+A, Ctrl+X) while keeping menu bar hidden
+    const editMenuTemplate = [
+      {
+        label: "Edit",
+        submenu: [
+          { role: "undo", accelerator: "CmdOrCtrl+Z" },
+          { role: "redo", accelerator: "CmdOrCtrl+Y" },
+          { type: "separator" },
+          { role: "cut", accelerator: "CmdOrCtrl+X" },
+          { role: "copy", accelerator: "CmdOrCtrl+C" },
+          { role: "paste", accelerator: "CmdOrCtrl+V" },
+          { role: "selectAll", accelerator: "CmdOrCtrl+A" }
+        ]
+      }
+    ];
+    Menu.setApplicationMenu(Menu.buildFromTemplate(editMenuTemplate));
     createWindow();
 
     // Start Antigravity Bridge Server for Remote Web & Word Sync
     try {
-      createBridgeServer(7777);
+      createBridgeServer(7777, {
+        getWindowInfo: () => mainWindow ? {
+          isVisible: mainWindow.isVisible(),
+          isMinimized: mainWindow.isMinimized(),
+          bounds: mainWindow.getBounds(),
+          isAlwaysOnTop: mainWindow.isAlwaysOnTop()
+        } : null,
+        showWindow: () => {
+          if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            if (!mainWindow.isVisible()) mainWindow.show();
+            mainWindow.setAlwaysOnTop(true, "normal");
+            mainWindow.focus();
+            return true;
+          }
+          return false;
+        }
+      });
       log("Antigravity Bridge server initialized on port 7777");
     } catch (err) {
       log("Bridge server init error: " + err.message);
@@ -98,7 +167,10 @@ if (!gotTheLock) {
       if (mainWindow.isVisible()) {
         mainWindow.hide();
       } else {
+        if (mainWindow.isMinimized()) mainWindow.restore();
         mainWindow.show();
+        mainWindow.setAlwaysOnTop(true, "normal");
+        mainWindow.focus();
       }
     });
 
@@ -251,6 +323,18 @@ ipcMain.handle("get-clipboard", () => {
   return text || "";
 });
 
+// IPC: Write clipboard
+ipcMain.handle("copy-text", (_event, text) => {
+  try {
+    clipboard.writeText(text || "");
+    log(`copy-text called: len=${text ? text.length : 0}`);
+    return true;
+  } catch (err) {
+    log("copy-text error: " + err.message);
+    return false;
+  }
+});
+
 // IPC: Antigravity Projects & Conversation Management
 ipcMain.handle("get-projects", async () => {
   try {
@@ -379,7 +463,7 @@ ${message}`;
         conversationId: conversationId || undefined,
         workspace: (documents && documents[0] && documents[0].workspace) || "c:/Users/ariel/testeos"
       });
-      if (cliResult) {
+      if (cliResult && cliResult.trim().length > 10 && !cliResult.toLowerCase().includes("sin respuesta")) {
         log(`Antigravity CLI succeeded! Length: ${cliResult.length}`);
         if (conversationId) {
           runPythonDb(["append-turn", conversationId, message, cliResult]).catch(() => {});
@@ -388,6 +472,8 @@ ${message}`;
           broadcastSSE("solution", { prompt: message, solution: cliResult, engine, timestamp: Date.now() });
         } catch (e) {}
         return { text: cliResult, model: agyModel || "antigravity" };
+      } else {
+        log(`Antigravity CLI output discarded (empty or invalid). Falling back to direct API...`);
       }
     } catch (cliErr) {
       log(`Antigravity CLI error (${agyModel || 'antigravity'}): ${cliErr.message}, falling back to direct API...`);

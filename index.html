@@ -77,6 +77,28 @@
       --modal-bg: #141417;
     }
 
+    /* High-contrast text selection */
+    ::selection {
+      background: #000000;
+      color: #ffffff;
+    }
+    body.theme-dark ::selection {
+      background: #ffffff;
+      color: #000000;
+    }
+
+    body, #chat, .msg, .msg *, #prompt-input, textarea, input, pre, code {
+      user-select: text !important;
+      -webkit-user-select: text !important;
+    }
+
+    button, .quick-btn, .btn-icon-only, .btn-sidebar-toggle, .btn-load-doc, 
+    .btn-apikey, .btn-host-pill, .btn-sidebar-action, .btn-sidebar-close, 
+    .sidebar-header, #header, #doc-bar, #quick-bar, .slash-item {
+      user-select: none !important;
+      -webkit-user-select: none !important;
+    }
+
     body {
       width: 100vw;
       height: 100vh;
@@ -687,6 +709,43 @@
     .msg.ai strong {
       font-weight: 700;
       color: var(--text-main);
+    }
+
+    /* 1-Click Copy Button on AI cards */
+    .msg-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 6px;
+      padding-top: 4px;
+      border-top: 1px dashed var(--border-main);
+    }
+
+    .btn-msg-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-btn);
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none !important;
+    }
+
+    .btn-msg-copy:hover {
+      background: var(--btn-secondary-hover);
+      color: var(--text-main);
+      border-color: var(--text-main);
+    }
+
+    .btn-msg-copy.copied {
+      background: var(--text-main);
+      color: var(--bg-app);
+      border-color: var(--text-main);
     }
 
     /* Slash command suggestions dropdown */
@@ -1649,7 +1708,7 @@
     });
 
     // Typing Mode Toggle (Icon-only ✎ with active toggle style)
-    async function setTypingMode(enable) {
+    async function setTypingMode(enable, shouldFocusInput = true) {
       typingMode = enable;
       btnTypeToggle.textContent = "✎";
       if (typingMode) {
@@ -1658,7 +1717,7 @@
         btnTypeToggle.classList.add("active");
         btnTypeToggle.title = "Tipear: ACTIVO (Toca para desactivar foco)";
         await window.ghostAPI.setFocusMode(true);
-        input.focus();
+        if (shouldFocusInput) input.focus();
       } else {
         focusIndicator.textContent = "NO-FOCO";
         focusIndicator.classList.remove("active");
@@ -1670,7 +1729,7 @@
     }
 
     btnTypeToggle.addEventListener("click", () => {
-      setTypingMode(!typingMode);
+      setTypingMode(!typingMode, true);
     });
 
     window.ghostAPI.onFocusStateChanged((state) => {
@@ -1681,7 +1740,6 @@
         focusIndicator.classList.add("active");
         btnTypeToggle.classList.add("active");
         btnTypeToggle.title = "Tipear: ACTIVO (Toca para desactivar foco)";
-        input.focus();
       } else {
         focusIndicator.textContent = "NO-FOCO";
         focusIndicator.classList.remove("active");
@@ -1692,7 +1750,21 @@
     });
 
     input.addEventListener("mousedown", () => {
-      if (!typingMode) setTypingMode(true);
+      if (!typingMode) setTypingMode(true, true);
+    });
+
+    // Mousedown on chat activates focus so user can drag-select text & use Ctrl+C
+    chat.addEventListener("mousedown", () => {
+      if (!typingMode) setTypingMode(true, false);
+    });
+
+    // Mouseenter on Preguntar or Portapapeles restores stealth no-focus mode
+    btnSelect.addEventListener("mouseenter", () => {
+      if (typingMode) setTypingMode(false);
+    });
+
+    btnClip.addEventListener("mouseenter", () => {
+      if (typingMode) setTypingMode(false);
     });
 
     // Slash commands list & autocomplete
@@ -1869,6 +1941,38 @@
           el.innerHTML = window.ghostAPI.renderMarkdown(text);
         } else {
           el.textContent = text;
+        }
+
+        // Add 1-click copy button on AI answers
+        if (type === "ai" && text && !text.includes("loading-bubble")) {
+          const actionRow = document.createElement("div");
+          actionRow.className = "msg-actions";
+          
+          const copyBtn = document.createElement("button");
+          copyBtn.className = "btn-msg-copy";
+          copyBtn.innerHTML = "⎘ Copiar";
+          copyBtn.title = "Copiar respuesta completa al portapapeles";
+          
+          copyBtn.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            try {
+              if (window.ghostAPI && typeof window.ghostAPI.copyText === "function") {
+                await window.ghostAPI.copyText(text);
+              }
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(text);
+              }
+            } catch (err) {}
+            copyBtn.textContent = "✓ Copiado";
+            copyBtn.classList.add("copied");
+            setTimeout(() => {
+              copyBtn.innerHTML = "⎘ Copiar";
+              copyBtn.classList.remove("copied");
+            }, 1500);
+          });
+          
+          actionRow.appendChild(copyBtn);
+          el.appendChild(actionRow);
         }
       } else {
         el.textContent = text;
